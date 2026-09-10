@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mostrador de Tábua de Marés</title>
+<meta name="description" content="Painel de LED que mostra hora, maré atual, gráfico da maré e fase da lua — direto do Wi-Fi, com dados oficiais da Marinha para mais de 50 portos do litoral brasileiro.">
+<style>
+  :root{
+    --bg:#f6f3ec;
+    --bg-alt:#ffffff;
+    --ink:#132330;
+    --ink-soft:#4a5b68;
+    --line:#dfd8c8;
+    --brand:#0f5c6b;
+    --brand-dark:#0a4450;
+    --accent:#e07a4f;
+    --accent-ink:#3a1d10;
+    --card-shadow: 0 1px 2px rgba(19,35,48,.06), 0 8px 24px rgba(19,35,48,.06);
+    --radius:16px;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#0e1a22;
+      --bg-alt:#132530;
+      --ink:#eef3f2;
+      --ink-soft:#a9bcc4;
+      --line:#233944;
+      --brand:#4fb7c4;
+      --brand-dark:#7fd0da;
+      --accent:#f0955f;
+      --accent-ink:#20120a;
+      --card-shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit}
+  img,svg{max-width:100%}
+  .wrap{max-width:1080px;margin:0 auto;padding-inline:20px}
+  section{padding-block:64px}
+
+  /* Header */
+  header.site{
+    position:sticky;top:0;z-index:20;
+    background:color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);
+  }
+  header.site .wrap{display:flex;align-items:center;justify-content:space-between;padding-block:14px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:1.05rem;text-decoration:none;letter-spacing:.2px}
+  .brand .dot{width:10px;height:10px;border-radius:2px;background:var(--brand);box-shadow:0 0 0 3px color-mix(in srgb, var(--brand) 20%, transparent)}
+  nav.links{display:flex;gap:24px;font-size:.92rem}
+  nav.links a{text-decoration:none;color:var(--ink-soft);font-weight:500}
+  nav.links a:hover{color:var(--ink)}
+  .btn-wa-small{display:inline-flex;align-items:center;gap:8px;background:var(--brand);color:#fff;padding:9px 16px;border-radius:999px;text-decoration:none;font-weight:600;font-size:.9rem;white-space:nowrap}
+  .btn-wa-small:hover{background:var(--brand-dark)}
+
+  @media (max-width:720px){
+    nav.links{display:none}
+  }
+
+  /* Hero */
+  .hero{padding-block:56px 40px}
+  .hero .grid{display:grid;grid-template-columns:1.1fr 1fr;gap:48px;align-items:center}
+  @media (max-width:860px){.hero .grid{grid-template-columns:1fr}}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:.8rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--brand);background:color-mix(in srgb, var(--brand) 12%, transparent);padding:6px 12px;border-radius:999px;margin-bottom:18px}
+  h1{font-size:clamp(1.9rem,4vw,2.7rem);line-height:1.15;margin:0 0 16px;letter-spacing:-.01em}
+  .lede{font-size:1.08rem;color:var(--ink-soft);margin:0 0 28px;max-width:46ch}
+  .cta-row{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:20px}
+  .btn{display:inline-flex;align-items:center;gap:10px;padding:13px 22px;border-radius:999px;font-weight:700;font-size:.98rem;text-decoration:none;border:1px solid transparent;cursor:pointer}
+  .btn-primary{background:var(--brand);color:#fff}
+  .btn-primary:hover{background:var(--brand-dark)}
+  .btn-outline{background:transparent;border-color:var(--line);color:var(--ink)}
+  .btn-outline:hover{border-color:var(--brand)}
+  .btn[disabled], .btn.is-disabled{opacity:.55;cursor:not-allowed;pointer-events:none}
+  .hero-note{font-size:.85rem;color:var(--ink-soft)}
+
+  /* Hero visual: LED matrix mockup */
+  .panel-mock{
+    background:#0b1f27;
+    border-radius:20px;
+    padding:26px 22px 20px;
+    box-shadow:var(--card-shadow);
+    border:1px solid rgba(255,255,255,.05);
+  }
+  .panel-mock .label{color:#7fd0da;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700;margin-bottom:10px;opacity:.8}
+  .led-grid{display:grid;grid-template-columns:repeat(32,1fr);gap:2px;aspect-ratio:32/8;margin-bottom:14px}
+  .led-grid i{display:block;width:100%;padding-bottom:100%;border-radius:1px;background:#12323b}
+  .led-grid i.on{background:#ff7a1a;box-shadow:0 0 4px rgba(255,122,26,.7)}
+  .panel-caption{color:#9fb3ba;font-size:.78rem;text-align:center}
+
+  /* Section headings */
+  .kicker{font-size:.78rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--brand);margin:0 0 8px}
+  h2{font-size:clamp(1.5rem,3vw,2rem);margin:0 0 12px;letter-spacing:-.01em}
+  .section-lede{color:var(--ink-soft);max-width:60ch;margin:0 0 36px}
+
+  /* Features */
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  @media (max-width:860px){.features{grid-template-columns:repeat(2,1fr)}}
+  @media (max-width:560px){.features{grid-template-columns:1fr}}
+  .feature{background:var(--bg-alt);border:1px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:var(--card-shadow)}
+  .feature .ico{width:38px;height:38px;border-radius:10px;background:color-mix(in srgb, var(--brand) 14%, transparent);display:flex;align-items:center;justify-content:center;margin-bottom:14px;font-size:1.15rem}
+  .feature h3{margin:0 0 6px;font-size:1.02rem}
+  .feature p{margin:0;color:var(--ink-soft);font-size:.93rem}
+
+  /* Steps */
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;counter-reset:step}
+  @media (max-width:760px){.steps{grid-template-columns:1fr}}
+  .step{position:relative;padding-top:8px}
+  .step .num{width:34px;height:34px;border-radius:50%;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;margin-bottom:14px;font-size:.95rem}
+  .step h3{margin:0 0 6px;font-size:1.02rem}
+  .step p{margin:0;color:var(--ink-soft);font-size:.93rem}
+
+  /* Specs */
+  .specs{background:var(--bg-alt);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--card-shadow)}
+  .specs table{width:100%;border-collapse:collapse}
+  .specs td{padding:14px 20px;border-bottom:1px solid var(--line);font-size:.94rem}
+  .specs tr:last-child td{border-bottom:none}
+  .specs td:first-child{color:var(--ink-soft);width:38%;font-weight:600}
+  @media (max-width:560px){
+    .specs td:first-child{width:44%}
+    .specs td{padding:12px 14px;font-size:.86rem}
+  }
+
+  /* Pricing */
+  .products{display:grid;grid-template-columns:1.2fr 1fr;gap:24px}
+  @media (max-width:760px){.products{grid-template-columns:1fr}}
+  .price-card{background:var(--bg-alt);border:1px solid var(--line);border-radius:var(--radius);padding:28px;box-shadow:var(--card-shadow);display:flex;flex-direction:column}
+  .price-card.featured{border-color:var(--brand);position:relative}
+  .price-card .tag{position:absolute;top:-12px;left:24px;background:var(--brand);color:#fff;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:5px 12px;border-radius:999px}
+  .price-card h3{margin:6px 0 4px;font-size:1.15rem}
+  .price-card .desc{color:var(--ink-soft);font-size:.92rem;margin:0 0 18px}
+  .price{font-size:2.1rem;font-weight:800;margin:0 0 4px;letter-spacing:-.02em}
+  .price small{font-size:.9rem;font-weight:600;color:var(--ink-soft)}
+  .price-note{font-size:.82rem;color:var(--ink-soft);margin:0 0 20px}
+  .price-card ul{margin:0 0 24px;padding-left:1.1em;color:var(--ink-soft);font-size:.92rem;display:grid;gap:6px}
+  .price-card .btn{margin-top:auto;justify-content:center}
+
+  /* Notice */
+  .notice{background:color-mix(in srgb, var(--accent) 12%, var(--bg-alt));border:1px solid color-mix(in srgb, var(--accent) 35%, var(--line));border-radius:var(--radius);padding:22px 24px;display:flex;gap:14px;align-items:flex-start}
+  .notice .ico{font-size:1.3rem;line-height:1}
+  .notice p{margin:0;font-size:.9rem;color:var(--ink-soft)}
+  .notice strong{color:var(--ink)}
+
+  /* Media placeholder gallery */
+  .gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  @media (max-width:760px){.gallery{grid-template-columns:1fr 1fr}}
+  @media (max-width:520px){.gallery{grid-template-columns:1fr}}
+  .ph{aspect-ratio:4/3;border-radius:14px;border:1.5px dashed var(--line);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:var(--ink-soft);font-size:.82rem;text-align:center;padding:16px;background:var(--bg-alt)}
+  .ph .ico{font-size:1.6rem;opacity:.6}
+
+  /* CTA band */
+  .cta-band{background:var(--brand);color:#fff;border-radius:24px;padding:44px 36px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:24px}
+  .cta-band h2{color:#fff;margin:0 0 6px}
+  .cta-band p{margin:0;color:rgba(255,255,255,.85);max-width:46ch}
+  .cta-band .btn-primary{background:#fff;color:var(--brand-dark)}
+  .cta-band .btn-primary:hover{background:#eef7f8}
+  .cta-band .btn-outline{border-color:rgba(255,255,255,.5);color:#fff}
+  .cta-band .btn-outline:hover{border-color:#fff}
+
+  footer.site{border-top:1px solid var(--line);padding-block:32px;margin-top:20px}
+  footer.site .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;align-items:center}
+  footer.site p{margin:0;color:var(--ink-soft);font-size:.85rem}
+  footer.site .foot-links{display:flex;gap:18px;font-size:.85rem}
+  footer.site .foot-links a{text-decoration:none;color:var(--ink-soft)}
+  footer.site .foot-links a:hover{color:var(--ink)}
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="#topo"><span class="dot"></span>Tábua de Marés</a>
+    <nav class="links">
+      <a href="#recursos">Recursos</a>
+      <a href="#como-funciona">Como funciona</a>
+      <a href="#produtos">Produtos</a>
+      <a href="manual.html">Manual</a>
+      <a href="#contato">Contato</a>
+    </nav>
+    <a class="btn-wa-small" id="wa-header" href="#" target="_blank" rel="noopener">Falar no WhatsApp</a>
+  </div>
+</header>
+
+<main id="topo">
+
+  <section class="hero">
+    <div class="wrap grid">
+      <div>
+        <span class="eyebrow">54 portos · litoral brasileiro inteiro</span>
+        <h1>A maré da sua praia, sempre à vista.</h1>
+        <p class="lede">Painel de LED que mostra a hora, a maré agora, o gráfico da maré e a fase da lua — direto do seu Wi-Fi, sem aplicativo, com dados oficiais da Marinha do Brasil.</p>
+        <div class="cta-row">
+          <a class="btn btn-primary" id="wa-hero" href="#" target="_blank" rel="noopener">Falar no WhatsApp</a>
+          <a class="btn btn-outline" id="ml-hero" href="#" target="_blank" rel="noopener">Ver no Mercado Livre</a>
+        </div>
+        <p class="hero-note">Envio para todo o Brasil · Configuração sem aplicativo, direto pelo navegador do celular</p>
+      </div>
+      <div class="panel-mock" aria-hidden="true">
+        <div class="label">Pré-visualização do painel</div>
+        <div class="led-grid" id="led-grid"></div>
+        <p class="panel-caption">Ilustração do display — fotos reais do produto em breve</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="recursos">
+    <div class="wrap">
+      <p class="kicker">Recursos</p>
+      <h2>Feito pra quem vive perto da maré</h2>
+      <p class="section-lede">Pescadores, marinas, casas de praia e quem simplesmente gosta de saber a hora certa da maré sem abrir o celular.</p>
+      <div class="features">
+        <div class="feature">
+          <div class="ico">🌊</div>
+          <h3>54 portos, litoral inteiro</h3>
+          <p>Do Amapá ao Rio Grande do Sul, incluindo Fernando de Noronha — dados oficiais da Diretoria de Hidrografia e Navegação (Marinha do Brasil).</p>
+        </div>
+        <div class="feature">
+          <div class="ico">📐</div>
+          <h3>Do tamanho que você quiser</h3>
+          <p>Painel configurável de 1 a 8 módulos de LED, ajustado direto na tela de configuração — sem precisar reprogramar nada.</p>
+        </div>
+        <div class="feature">
+          <div class="ico">📈</div>
+          <h3>Gráfico da maré, pixel a pixel</h3>
+          <p>Além da hora e da maré atual, o painel desenha a curva da maré ao longo do dia, com marcação de "agora".</p>
+        </div>
+        <div class="feature">
+          <div class="ico">🌙</div>
+          <h3>Fase da lua</h3>
+          <p>Cheia, nova, crescente ou minguante — sempre no ciclo de exibição, sem precisar calcular por fora.</p>
+        </div>
+        <div class="feature">
+          <div class="ico">📶</div>
+          <h3>Conecta sozinho</h3>
+          <p>Guarda até 5 redes Wi-Fi conhecidas e tenta cada uma sozinho — útil pra quem leva o aparelho entre casa, sítio e barco.</p>
+        </div>
+        <div class="feature">
+          <div class="ico">🔄</div>
+          <h3>Atualiza sozinho todo ano</h3>
+          <p>Quando a tábua do ano seguinte fica disponível, o aparelho baixa sozinho — sem precisar levar pra ninguém mexer.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="como-funciona">
+    <div class="wrap">
+      <p class="kicker">Como funciona</p>
+      <h2>Três passos até a maré aparecer na parede</h2>
+      <div class="steps">
+        <div class="step">
+          <div class="num">1</div>
+          <h3>Ligue na USB-C</h3>
+          <p>Ao ligar pela primeira vez, o aparelho abre sua própria rede de configuração.</p>
+        </div>
+        <div class="step">
+          <div class="num">2</div>
+          <h3>Conecte o Wi-Fi e escolha o porto</h3>
+          <p>Pelo navegador do celular, sem instalar nada: escolha a rede Wi-Fi do local e o porto mais próximo numa lista com o litoral inteiro.</p>
+        </div>
+        <div class="step">
+          <div class="num">3</div>
+          <h3>Pronto</h3>
+          <p>O painel já mostra hora, maré, gráfico e fase da lua — e continua se atualizando sozinho depois disso.</p>
+        </div>
+      </div>
+      <p style="margin-top:28px;font-size:.92rem;color:var(--ink-soft)">Já tem o seu? Veja o <a href="manual.html" style="color:var(--brand);font-weight:600">manual completo de uso</a>.</p>
+    </div>
+  </section>
+
+  <section id="especificacoes">
+    <div class="wrap">
+      <p class="kicker">Especificações</p>
+      <h2>Ficha técnica</h2>
+      <div class="specs">
+        <table>
+          <tr><td>Painel</td><td>Matriz de LED (MAX7219), módulos 8×8, de 1 a 8 módulos</td></tr>
+          <tr><td>Processador</td><td>ESP32 com Wi-Fi integrado</td></tr>
+          <tr><td>Alimentação</td><td>USB-C, 5V</td></tr>
+          <tr><td>Ajustes</td><td>Brilho, velocidade de rolagem e número de módulos, pela tela de configuração</td></tr>
+          <tr><td>Redes Wi-Fi</td><td>Até 5 memorizadas, conecta sozinho na mais próxima conhecida</td></tr>
+          <tr><td>Fonte dos dados</td><td>Tábuas oficiais da Marinha do Brasil (DHN) — 54 portos, ano 2026</td></tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="produtos">
+    <div class="wrap">
+      <p class="kicker">Produtos</p>
+      <h2>Preço</h2>
+      <p class="section-lede">Fale no WhatsApp pra combinar tamanho do painel, cor da moldura e prazo de entrega.</p>
+      <div class="products">
+        <div class="price-card featured">
+          <span class="tag">Produto principal</span>
+          <h3>Mostrador de Tábua de Marés</h3>
+          <p class="desc">Painel completo com todos os recursos: hora, maré atual, gráfico da maré e fase da lua, com acesso aos 54 portos do litoral brasileiro.</p>
+          <p class="price">R$ 350 <small>à vista</small></p>
+          <p class="price-note">Tamanho padrão 32×8 (4 módulos) — outros tamanhos sob consulta.</p>
+          <ul>
+            <li>Firmware já configurado, pronto pra usar</li>
+            <li>Atualização automática de tábua todo ano</li>
+            <li>Acesso aos 54 portos, sem custo extra</li>
+          </ul>
+          <a class="btn btn-primary" id="wa-produto-painel" href="#" target="_blank" rel="noopener">Falar no WhatsApp</a>
+        </div>
+        <div class="price-card">
+          <h3>Carregador USB-C</h3>
+          <p class="desc">Carregador dedicado para o mostrador — evita instabilidade por fonte fraca ou incompatível.</p>
+          <p class="price">R$ 40</p>
+          <p class="price-note">Opcional, caso já tenha uma fonte USB-C de 5V/2A compatível.</p>
+          <ul>
+            <li>5V, compatível com o consumo do painel</li>
+            <li>Plugue padrão brasileiro</li>
+          </ul>
+          <a class="btn btn-outline" id="wa-produto-carregador" href="#" target="_blank" rel="noopener">Falar no WhatsApp</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="fotos">
+    <div class="wrap">
+      <p class="kicker">Fotos</p>
+      <h2>Em breve</h2>
+      <p class="section-lede">As fotos reais do produto acabado entram aqui assim que ficarem prontas.</p>
+      <div class="gallery">
+        <div class="ph"><span class="ico">📷</span>Foto do painel ligado</div>
+        <div class="ph"><span class="ico">📷</span>Foto de instalação</div>
+        <div class="ph"><span class="ico">📷</span>Foto dos detalhes/acabamento</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="avisos">
+    <div class="wrap">
+      <div class="notice">
+        <span class="ico">⚠️</span>
+        <p><strong>Aviso importante:</strong> os dados de maré são previsões astronômicas oficiais da Marinha do Brasil (DHN), não medições em tempo real. Vento, pressão atmosférica e ressacas podem alterar a altura real da água. Não usar como única fonte para navegação ou segurança.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="contato">
+    <div class="wrap">
+      <div class="cta-band">
+        <div>
+          <h2>Quer o seu?</h2>
+          <p>Fale no WhatsApp pra combinar tamanho, cor e prazo — ou veja o anúncio no Mercado Livre.</p>
+        </div>
+        <div class="cta-row" style="margin:0">
+          <a class="btn btn-primary" id="wa-band" href="#" target="_blank" rel="noopener">Falar no WhatsApp</a>
+          <a class="btn btn-outline" id="ml-band" href="#" target="_blank" rel="noopener">Mercado Livre</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <p>© <span id="year"></span> Mostrador de Tábua de Marés · Dados de maré: Marinha do Brasil (DHN)</p>
+    <div class="foot-links">
+      <a href="#topo">Topo</a>
+      <a href="#produtos">Produtos</a>
+      <a href="manual.html">Manual</a>
+      <a href="#contato">Contato</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ======================================================================
+   CONFIGURAÇÃO DO SITE — edite só aqui antes de publicar
+   ====================================================================== */
+const CONFIG = {
+  // TODO: número de WhatsApp com DDI+DDD, só dígitos (ex: "5571999998888")
+  whatsappNumber: "",
+  whatsappMessage: "Olá! Vi o Mostrador de Tábua de Marés e quero saber mais.",
+
+  // TODO: link do anúncio no Mercado Livre. Deixe null enquanto não publicar.
+  mercadoLivreUrl: null,
+};
+
+function buildWhatsAppLink(extraMessage){
+  const msg = extraMessage || CONFIG.whatsappMessage;
+  const text = encodeURIComponent(msg);
+  if (CONFIG.whatsappNumber){
+    return `https://wa.me/${CONFIG.whatsappNumber}?text=${text}`;
+  }
+  return null;
+}
+
+function wireCTA(id, url, disabledLabel){
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (url){
+    el.href = url;
+  } else {
+    el.href = "#";
+    el.classList.add("is-disabled");
+    el.setAttribute("aria-disabled", "true");
+    el.addEventListener("click", (e) => e.preventDefault());
+    if (disabledLabel) el.textContent = disabledLabel;
+  }
+}
+
+(function init(){
+  const waLink = buildWhatsAppLink();
+  ["wa-header","wa-hero","wa-produto-painel","wa-produto-carregador","wa-band"].forEach(id =>
+    wireCTA(id, waLink, "WhatsApp em breve")
+  );
+
+  const mlLink = CONFIG.mercadoLivreUrl;
+  ["ml-hero","ml-band"].forEach(id =>
+    wireCTA(id, mlLink, "Anúncio em breve")
+  );
+
+  document.getElementById("year").textContent = new Date().getFullYear();
+
+  // Monta o mockup do painel de LED (padrão fixo, ilustrativo)
+  const grid = document.getElementById("led-grid");
+  if (grid){
+    const cols = 32, rows = 8;
+    // silhueta simples de onda (curva de maré) pra acender alguns pixels
+    const wave = [3,2,2,1,1,0,0,0,1,1,2,3,4,5,6,6,7,7,6,6,5,4,3,2,2,1,1,2,3,4,5,6];
+    let html = "";
+    for (let r=0;r<rows;r++){
+      for (let c=0;c<cols;c++){
+        const on = wave[c] === r;
+        html += `<i class="${on ? "on" : ""}"></i>`;
+      }
+    }
+    grid.innerHTML = html;
+  }
+})();
+</script>
+
+</body>
+</html>
