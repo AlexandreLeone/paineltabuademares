@@ -1,0 +1,126 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Panel de Mareas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --tinta:#0b2436; --tinta-suave:#3d5163; --tinta-fraca:#6d7f7a;
+  --papel:#fbfcfa; --papel-2:#eef1ee; --linha:#d7ddd4;
+  --acento:#0f6d82; --acento-fraco:#dbe9ea; --amarelo:#e0932c;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--papel-2);color:var(--tinta);font-family:'Public Sans', ui-sans-serif, system-ui, sans-serif;
+  line-height:1.6}
+.envelope{max-width:760px;margin:0 auto;padding:48px 22px 80px}
+header.hero{display:flex;align-items:center;gap:16px;margin-bottom:8px}
+header.hero .marca-onda{width:40px;height:40px;color:var(--acento);flex:none}
+h1{font-family:'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;font-size:clamp(28px,5vw,38px);margin:0;text-wrap:balance}
+.sub-hero{color:var(--tinta-suave);font-size:16px;margin:2px 0 30px}
+nav.indice{display:flex;flex-wrap:wrap;gap:8px 16px;padding:14px 18px;background:var(--papel);
+  border:1px solid var(--linha);border-radius:10px;margin-bottom:36px;font-size:13.5px}
+nav.indice a{color:var(--acento);text-decoration:none}
+nav.indice a:hover{text-decoration:underline}
+.bloco-web{background:var(--papel);border:1px solid var(--linha);border-radius:14px;
+  padding:26px 28px;margin-bottom:20px}
+.cabeca-web{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.cabeca-web h2{font-family:'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;font-size:21px;margin:0;color:var(--tinta)}
+.icone-wrap{display:inline-flex;width:var(--tam,1em);height:var(--tam,1em);flex:none;color:var(--acento)}
+.icone{width:100%;height:100%}
+.corpo-web p{margin:0 0 10px;max-width:62ch}
+.corpo-web ul,.corpo-web ol{margin:0 0 10px;padding-left:22px}
+.corpo-web li{margin-bottom:6px}
+.corpo-web strong{color:var(--acento)}
+
+.demo-grafico{margin-top:18px;display:flex;flex-direction:column;align-items:center;gap:14px}
+.rig-web{background:#0c2431;padding:10px;border-radius:10px;display:grid;
+  grid-template-columns:repeat(32,1fr);gap:2px;width:min(100%,480px)}
+.rig-web .dot{aspect-ratio:1;border-radius:50%;background:#123244}
+.rig-web .dot.on{background:var(--amarelo);box-shadow:0 0 4px 1px rgba(224,147,44,.65)}
+.rig-web .dot.agora{background:#e8382d;box-shadow:0 0 4px 1px rgba(232,56,45,.6)}
+.legenda-web{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--tinta-suave);
+  align-items:center}
+.sw{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px}
+.sw-on{background:var(--amarelo)}
+.sw-off{background:#123244;border:1px solid #24485c}
+.sw-now{background:#123244;border:1.5px solid var(--amarelo)}
+.seg-web{display:inline-flex;border:1px solid var(--linha);border-radius:8px;overflow:hidden}
+.seg-web button{font-family:inherit;font-size:13px;background:var(--papel);color:var(--tinta-suave);
+  border:none;padding:8px 16px;cursor:pointer}
+.seg-web button+button{border-left:1px solid var(--linha)}
+.seg-web button.ativo{background:var(--acento-fraco);color:var(--acento);font-weight:600}
+
+.grupo-estado{margin-bottom:14px}
+.grupo-estado .uf{display:inline-block;background:var(--acento);color:var(--papel);
+  font-size:11.5px;font-weight:700;letter-spacing:.03em;padding:2px 7px;border-radius:5px;
+  margin-right:8px;vertical-align:middle}
+.grupo-estado .lista-portos{color:var(--tinta-suave);font-size:14px}
+
+footer.rodape-web{text-align:center;color:var(--tinta-fraca);font-size:13px;margin-top:30px}
+footer.rodape-web a{color:var(--acento)}
+</style></head><body>
+<div class="envelope">
+  <header class="hero">
+    <span class="marca-onda"><svg viewBox="0 0 24 24" class="icone" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M1 9c2-3.2 4-3.2 6 0s4 3.2 6 0 4-3.2 6-0 4-3.2 6 0"/><path d="M1 15c2-3.2 4-3.2 6 0s4 3.2 6 0 4-3.2 6-0 4-3.2 6 0" opacity=".45"/></g></svg></span>
+    <div><h1>Panel de Mareas</h1><p class="sub-hero">Manual rápido de uso</p></div>
+  </header>
+  <nav class="indice"><a href="#dados">¿De dónde vienen los datos?</a><a href="#primeira_conexao">Primera conexión (panel nuevo)</a><a href="#redes_salvas">Varias redes Wi-Fi guardadas</a><a href="#tela_config">Pantalla de configuración</a><a href="#sequencia">Qué aparece en el panel, en orden</a><a href="#grafico">Cómo leer el gráfico de la marea</a><a href="#lua">¿De dónde viene la fase lunar?</a><a href="#sincronizando">Por qué demora un poco / &quot;SINCRONIZANDO&quot;</a><a href="#duvidas">¿Dudas?</a><a href="#portos">Tablas de marea disponibles (54 puertos)</a></nav>
+  <section class="bloco-web" id="dados"><div class="cabeca-web"><span class="icone-wrap" style="--tam:1.6em"><svg viewBox="0 0 24 24" class="icone" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M1 9c2-3.2 4-3.2 6 0s4 3.2 6 0 4-3.2 6-0 4-3.2 6 0"/><path d="M1 15c2-3.2 4-3.2 6 0s4 3.2 6 0 4-3.2 6-0 4-3.2 6 0" opacity=".45"/></g></svg></span><h2>¿De dónde vienen los datos?</h2></div><div class="corpo-web"><p>Las tablas son las oficiales de la Marina de Brasil (DHN), con más de 50 puertos en todo el litoral. El panel descarga solo, por internet, la tabla del puerto elegido — no hace falta copiar nada a mano. Verifica si hay una tabla más nueva al encender, una vez por día, y siempre que usted actualiza algo en la pantalla de configuración — y se actualiza solo cuando la encuentra.</p></div></section><section class="bloco-web" id="primeira_conexao"><div class="cabeca-web"><span class="icone-wrap" style="--tam:1.6em"><svg viewBox="0 0 24 24" class="icone" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="11" rx="1.3"/><circle cx="12" cy="10.6" r=".18" fill="currentColor"/><path d="M9.6 14.68 a2.4 2.4 0 0 1 4.8 0" /><path d="M7.4 13.47 a4.6 4.6 0 0 1 9.2 0" /><path d="M5.2 12.26 a6.8 6.8 0 0 1 13.6 0" /></g></svg></span><h2>Primera conexión (panel nuevo)</h2></div><div class="corpo-web"><ul><li>Enchufe el panel en el tomacorriente.</li><li>En el celular, conéctese a la red Wi-Fi &quot;TabuaDeMares-Setup&quot;.</li><li>Debería abrirse sola una pantalla de configuración (si no abre, abra el navegador y escriba 192.168.4.1).</li><li>Elija su red Wi-Fi, escriba la contraseña y confirme.</li><li>Listo: el panel sale de esa red temporal y entra en la suya.</li></ul></div></section><section class="bloco-web" id="redes_salvas"><div class="cabeca-web"><span class="icone-wrap" style="--tam:1.6em"><svg viewBox="0 0 24 24" class="icone" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.0" y="16" width="2.6" height="4" rx=".6"/><rect x="7.2" y="12" width="2.6" height="8" rx=".6"/><rect x="11.4" y="8" width="2.6" height="12" rx=".6"/><rect x="15.600000000000001" y="4" width="2.6" height="16" rx=".6"/></g></svg></span><h2>Varias redes Wi-Fi guardadas</h2></div><div class="corpo-web"><p>El panel guarda solo hasta 5 redes Wi-Fi diferentes ya usadas, y se reconecta a cualquiera de ellas automáticamente — útil si circula entre lugares (casa, trabajo, un barco). En la pantalla de configuración, &quot;Agregar red Wi-Fi&quot; suma una red nueva sin borrar las demás; &quot;Olvidar todas las redes Wi-Fi&quot; vacía la lista.</p></div></section><section class="bloco-web" id="tela_config"><div class="cabeca-web"><span class="icone-wrap" style="--tam:1.6em"><svg viewBox="0 0 24 24" class="icone" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="6.4"/><circle cx="12" cy="12" r="2.6"/><polygon points="20.70,9.69 20.70,14.31 19.15,13.90 19.15,10.10"/><polygon points="19.79,16.51 16.51,19.79 15.71,18.40 18.40,15.71"/><polygon points="14.31,20.70 9.69,20.70 10.10,19.15 13.90,19.15"/><polygon points="7.49,19.79 4.21,16.51 5.60,15.71 8.29,18.40"/><polygon points="3.30,14.31 3.30,9.69 4.85,10.10 4.85,13.90"/><polygon points="4.21,7.49 7.49,4.21 8.29,5.60 5.60,8.29"/><polygon points="9.69,3.30 14.31,3.30 13.90,4.85 10.10,4.85"/><polygon points="16.51,4.21 19.79,7.49 18.40,8.29 15.71,5.60"/></g></svg></span><h2>Pantalla de configuración</h2></div><div class="corpo-web"><p>Con el panel ya en su red, acceda desde el celular o la computadora: <strong>http://tabuademares.local</strong></p><ul><li>Descripción (texto del letrero): hasta 3999 caracteres, se desplaza en el panel. En blanco, este ítem desaparece del ciclo.</li><li>Tabla de mareas: elija el puerto en la lista.</li><li>Qué mostrar: casillas para activar/desactivar hora y marea actual, próxima marea y próxima fase lunar. El gráfico no tiene casilla — aparece siempre, al final.</li><li>Brillo del panel: de 0 (más tenue) a 15 (más fuerte).</li><li>Velocidad de desplazamiento: de 10 (más rápido) a 150 (más lento).</li><li>Duración del gráfico: de 3 a 60 segundos.</li></ul><p class="final">Consejo: si la dirección no abre, el celular y el panel probablemente están en redes Wi-Fi diferentes — conecte el celular a la misma red del panel.</p></div></section><section class="bloco-web" id="sequencia"><div class="cabeca-web"><span class="icone-wrap" style="--tam:1.6em"><svg viewBox="0 0 24 24" class="icone" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 13.6-5.7"/><path d="M17.6 3.4v3.4h-3.4"/><path d="M20 12a8 8 0 0 1-13.6 5.7"/><path d="M6.4 20.6v-3.4h3.4"/></g></svg></span><h2>Qué aparece en el panel, en orden</h2></div><div class="corpo-web"><ol><li>Texto configurado, desplazándose (si lo hay)</li><li>Hora y altura de la marea actual (si está marcado)</li><li>Próxima marea: hora y si es alta o baja (si está marcado)</li><li>Próxima fase lunar (si está marcado)</li><li>Gráfico de la marea (duración configurable, por defecto 10s) — vea cómo leerlo al lado. Siempre aparece, siempre al final.</li></ol><p class="final">Después vuelve al inicio y se repite.</p></div></section><section class="bloco-web" id="grafico"><div class="cabeca-web"><span class="icone-wrap" style="--tam:1.6em"><svg viewBox="0 0 24 24" class="icone" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.0" y="14" width="2.1" height="6" rx=".4"/><rect x="5.4" y="10" width="2.1" height="10" rx=".4"/><rect x="8.8" y="5" width="2.1" height="15" rx=".4"/><rect x="12.2" y="9" width="2.1" height="11" rx=".4"/><rect x="15.6" y="13" width="2.1" height="7" rx=".4"/><rect x="19.0" y="8" width="2.1" height="12" rx=".4"/><line x1="1" y1="21" x2="23" y2="21" opacity=".4"/></g></svg></span><h2>Cómo leer el gráfico de la marea</h2></div><div class="corpo-web"><p>El gráfico muestra el tramo entre la última marea (izquierda) y la próxima (derecha) — media onda. La parte encendida es el nivel del agua. La marca de &quot;ahora&quot; siempre avanza de izquierda a derecha, terminando en la próxima marea; es una columna con un hueco dentro del agua (o un trazo encendido fuera de ella).</p></div>
+            <div class="demo-grafico">
+              <div class="rig-web" id="rig-web"></div>
+              <div class="legenda-web">
+                <span><span class="sw sw-on"></span>nivel del agua</span>
+                <span><span class="sw sw-off"></span>aire</span>
+                <span><span class="sw sw-now"></span>marca de "ahora"</span>
+              </div>
+              <div class="seg-web" id="seg-web">
+                <button data-dir="subindo" class="ativo">Marea subiendo</button>
+                <button data-dir="descendo">Marea bajando</button>
+              </div>
+            </div></section><section class="bloco-web" id="lua"><div class="cabeca-web"><span class="icone-wrap" style="--tam:1.6em"><svg viewBox="0 0 24 24" class="icone" aria-hidden="true"><circle cx="12" cy="12" r="8.4" fill="currentColor"/><circle cx="16.2" cy="8.6" r="7.4" fill="var(--papel)"/></svg></span><h2>¿De dónde viene la fase lunar?</h2></div><div class="corpo-web"><p>Las fechas vienen de un calendario astronómico que el panel descarga por internet junto con la tabla de marea (y se actualiza solo al cambiar el año) — es el mismo en cualquier puerto. El texto &quot;PRÓXIMA LUNA [FASE] EN X DÍAS&quot; muestra cuál es la próxima fase y en cuántos días ocurre: Nueva (oculta), Creciente (parte iluminada aumentando), Llena (totalmente iluminada) o Menguante (parte iluminada disminuyendo).</p></div></section><section class="bloco-web" id="sincronizando"><div class="cabeca-web"><span class="icone-wrap" style="--tam:1.6em"><svg viewBox="0 0 24 24" class="icone" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.3l3.6 2"/></g></svg></span><h2>Por qué demora un poco / &quot;SINCRONIZANDO&quot;</h2></div><div class="corpo-web"><p>Al encender (o reconectar), el panel primero se conecta a una red Wi-Fi conocida — esto puede tardar unos segundos. En cuanto se conecta, aparece &quot;SINCRONIZANDO&quot; desplazándose: es el panel buscando la tabla de mareas actualizada por internet, y es normal. Si &quot;SINCRONIZANDO&quot; aparece pero el panel no vuelve a la normalidad después de unos 3 minutos, el motivo más común es una contraseña de Wi-Fi incorrecta — reconfigure la red (vea &quot;Agregar red Wi-Fi&quot;).</p></div></section><section class="bloco-web" id="duvidas"><div class="cabeca-web"><span class="icone-wrap" style="--tam:1.6em"><svg viewBox="0 0 24 24" class="icone" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="1.6"/><path d="M3.2 6.2 12 13 20.8 6.2"/></g></svg></span><h2>¿Dudas?</h2></div><div class="corpo-web"><p>Escriba a paineltabuademares@gmail.com o visite paineltabuademares.com.br.</p></div></section>
+  <section class="bloco-web" id="portos">
+    <div class="cabeca-web"><span class="icone-wrap" style="--tam:1.6em"><svg viewBox="0 0 24 24" class="icone" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="3" cy="5.0" r="1.1" fill="currentColor" stroke="none"/><line x1="7" y1="5.0" x2="22" y2="5.0"/><circle cx="3" cy="11.5" r="1.1" fill="currentColor" stroke="none"/><line x1="7" y1="11.5" x2="22" y2="11.5"/><circle cx="3" cy="18.0" r="1.1" fill="currentColor" stroke="none"/><line x1="7" y1="18.0" x2="22" y2="18.0"/></g></svg></span><h2>Tablas de marea disponibles (54 puertos)</h2></div>
+    <div class="corpo-web"><div class="grupo-estado"><span class="uf">AL</span><span class="lista-portos">Porto de Maceió</span></div><div class="grupo-estado"><span class="uf">AP</span><span class="lista-portos">Barra Norte - Arco Lamoso, Porto de Santana - Cia Docas de Santana</span></div><div class="grupo-estado"><span class="uf">BA</span><span class="lista-portos">Porto de Aratu - Base Naval, Porto de Ilhéus - Malhado, Porto de Madre de Deus, Porto de Salvador</span></div><div class="grupo-estado"><span class="uf">CE</span><span class="lista-portos">Porto de Mucuripe - Fortaleza, Terminal Portuário do Pecém</span></div><div class="grupo-estado"><span class="uf">ES</span><span class="lista-portos">Porto de Tubarão, Porto de Vitória, Terminal da Ponta do Ubu, Terminal de Barra do Riacho</span></div><div class="grupo-estado"><span class="uf">MA</span><span class="lista-portos">Porto de Itaqui, Porto de Tutóia, São Luís, Terminal da Alumar, Terminal da Ponta da Madeira</span></div><div class="grupo-estado"><span class="uf">PA</span><span class="lista-portos">Atracadouro de Breves, Fundeadouro de Salinópolis, Igarapé Grande do Curuá, Ilha do Mosqueiro, Ilha dos Guarás, Porto de Belém, Porto de Vila do Conde</span></div><div class="grupo-estado"><span class="uf">PB</span><span class="lista-portos">Porto de Cabedelo</span></div><div class="grupo-estado"><span class="uf">PE</span><span class="lista-portos">Arquipélago de Fernando de Noronha, Porto de Suape, Porto do Recife</span></div><div class="grupo-estado"><span class="uf">PI</span><span class="lista-portos">Porto de Luís Correia</span></div><div class="grupo-estado"><span class="uf">PR</span><span class="lista-portos">Barra de Paranaguá - Canal Sueste, Barra de Paranaguá - Canal da Galheta, Porto de Paranaguá - Cais Oeste, Terminal Portuário da Ponta do Félix</span></div><div class="grupo-estado"><span class="uf">RJ</span><span class="lista-portos">Porto de Angra dos Reis, Porto de Itaguaí, Porto do Açu, Porto do Forno, Porto do Rio de Janeiro - Ilha Fiscal, Terminal Marítimo de Imbetiba, Terminal da Ilha Guaíba</span></div><div class="grupo-estado"><span class="uf">RN</span><span class="lista-portos">Porto de Areia Branca - Termisa, Porto de Guamaré, Porto de Macau, Porto de Natal - Comando do 3º Distrito Naval</span></div><div class="grupo-estado"><span class="uf">RS</span><span class="lista-portos">Porto do Rio Grande</span></div><div class="grupo-estado"><span class="uf">SC</span><span class="lista-portos">Porto de Florianópolis, Porto de Imbituba, Porto de Itajaí, Porto de São Francisco do Sul</span></div><div class="grupo-estado"><span class="uf">SE</span><span class="lista-portos">Capitania dos Portos de Sergipe, Terminal Marítimo Inácio Barbosa</span></div><div class="grupo-estado"><span class="uf">SP</span><span class="lista-portos">Porto de Santos, Porto de São Sebastião</span></div></div>
+  </section>
+  <footer class="rodape-web">Panel de Mareas &middot; paineltabuademares@gmail.com &middot; <a href="index.html">Inicio</a> &middot; <a href="manual-rgb.html">Manual del Panel RGB</a></footer>
+</div>
+<script>
+(function(){
+  const LARGURA=32, RGB=false;
+  const ALTURAS={subindo:[0.30,1.80],descendo:[1.80,0.30]};
+  const rig=document.getElementById('rig-web');
+  const dots=[];
+  for(let i=0;i<LARGURA*8;i++){const d=document.createElement('div');d.className='dot';rig.appendChild(d);dots.push(d);}
+  function computeGrid(a1,a2,fAgora){
+    const alturaMin=Math.min(a1,a2),alturaMax=Math.max(a1,a2);
+    let faixa=alturaMax-alturaMin; if(faixa<0.01)faixa=0.01;
+    const colunaAgora=Math.round(fAgora*(LARGURA-1));
+    const grid=Array.from({length:8},()=>new Array(LARGURA).fill(0)); // 0 apagado, 1 agua, 2 "agora" (RGB)
+    for(let coluna=0;coluna<LARGURA;coluna++){
+      const f=coluna/(LARGURA-1);
+      const alt=a1+(a2-a1)*(1-Math.cos(Math.PI*f))/2.0;
+      const fn=(alt-alturaMin)/faixa;
+      let linha=Math.round((1.0-fn)*7); linha=Math.max(0,Math.min(7,linha));
+      const ehAgora=coluna===colunaAgora;
+      for(let l=0;l<8;l++){const agua=l>=linha; grid[l][coluna]=ehAgora?(RGB?2:(agua?0:1)):(agua?1:0);}
+    }
+    return grid;
+  }
+  let fAgora=0.32, dir='subindo';
+  function render(){
+    const [a1,a2]=ALTURAS[dir];
+    const grid=computeGrid(a1,a2,fAgora);
+    for(let row=0;row<8;row++)for(let col=0;col<LARGURA;col++){
+      const d=dots[row*LARGURA+col];
+      d.classList.toggle('on',grid[row][col]===1); d.classList.toggle('agora',grid[row][col]===2);
+    }
+  }
+  document.getElementById('seg-web').addEventListener('click',(ev)=>{
+    const b=ev.target.closest('button'); if(!b)return;
+    document.querySelectorAll('#seg-web button').forEach(x=>x.classList.remove('ativo'));
+    b.classList.add('ativo'); dir=b.dataset.dir; render();
+  });
+  setInterval(()=>{ fAgora=(fAgora+0.02)%1; render(); },450);
+  render();
+})();
+</script>
+</body></html>
