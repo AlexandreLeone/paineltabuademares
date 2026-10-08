@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tábua de Marés</title>
+<meta name="description" content="Painel de LED de marés no celular: maré agora, próximas marés, fase da lua e gráfico, para 54 portos do litoral brasileiro.">
+<meta name="theme-color" content="#05090c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Marés">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icone-192.png">
+<style>
+  /* mesma paleta do site e do app Android */
+  :root{
+    --tinta:#0b2436; --tinta-suave:#3d5163;
+    --papel:#fbfcfa; --papel-2:#eef1ee; --linha:#d7ddd4;
+    --acento:#0f6d82; --acento-fraco:#dbe9ea; --led:#ff8a1f;
+    --placa:#05090c; --placa-texto:#e6edf0;
+    --topo: env(safe-area-inset-top, 0px); --baixo: env(safe-area-inset-bottom, 0px);
+    --esq: env(safe-area-inset-left, 0px); --dir: env(safe-area-inset-right, 0px);
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --tinta:#e6edf0; --tinta-suave:#9fb0ba; --papel:#132029; --papel-2:#0a1218;
+      --linha:#24343e; --acento:#5fb8cb; --acento-fraco:#1d3a44;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{background:var(--papel-2);color:var(--tinta);
+    font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
+  button{font:inherit;color:inherit}
+  .tela{display:none;min-height:100%}
+  .tela.ativa{display:flex;flex-direction:column}
+
+  /* ---------- display ---------- */
+  #tela-display{background:var(--placa)}
+  .barra{display:flex;align-items:center;gap:4px;padding:calc(8px + var(--topo)) calc(8px + var(--dir)) 8px calc(16px + var(--esq));color:var(--placa-texto)}
+  .barra h1{flex:1;margin:0;font-size:17px;font-weight:700;line-height:1.25;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .btn-texto{background:none;border:0;color:var(--led);font-weight:600;padding:10px 12px;border-radius:10px;cursor:pointer;min-height:44px}
+  .btn-texto:active{background:rgba(255,138,31,.15)}
+  canvas.led{display:block;width:calc(100% - 16px);margin:0 8px;background:var(--placa)}
+  #grafico-fixo{margin-bottom:6px}
+  .cartoes{flex:1;background:var(--papel-2);padding:16px calc(16px + var(--dir)) calc(24px + var(--baixo)) calc(16px + var(--esq));margin-top:12px}
+  .cartao{background:var(--papel);border:1px solid var(--linha);border-radius:14px;padding:16px;margin-bottom:12px}
+  .cartao h2{margin:0 0 6px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--tinta-suave)}
+  .grande{font-size:32px;font-weight:700;margin:0}
+  .suave{color:var(--tinta-suave);font-size:15px;margin:0}
+  .lista-mares{font:15px/1.9 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre;margin:0;overflow-x:auto}
+  .rodape{color:var(--tinta-suave);font-size:12px;margin:8px 0 0}
+  .aviso-instalar{display:none;background:var(--acento-fraco);color:var(--tinta);border-radius:12px;padding:12px 14px;font-size:14px;margin-bottom:12px}
+  .aviso-instalar.ver{display:block}
+  .aviso-instalar button{float:right;background:none;border:0;font-size:18px;line-height:1;padding:0 0 0 8px;cursor:pointer;color:var(--tinta-suave)}
+
+  /* deitado (celular): só o painel, em tela cheia */
+  @media (orientation: landscape) and (max-height: 600px){
+    #tela-display.ativa{position:fixed;inset:0;justify-content:center}
+    #tela-display .barra{position:absolute;top:0;left:0;right:0;background:rgba(5,9,12,.82);z-index:2;display:none}
+    #tela-display.mostrar-barra .barra{display:flex}
+    #grafico-fixo,.cartoes{display:none}
+    #painel{flex:1;width:100%;margin:0;height:100%}
+  }
+
+  /* ---------- telas claras ---------- */
+  .cabecalho{display:flex;align-items:center;gap:8px;padding:calc(10px + var(--topo)) calc(12px + var(--dir)) 8px calc(8px + var(--esq));background:var(--papel-2)}
+  .cabecalho h1{margin:0;font-size:20px;flex:1}
+  .voltar{background:none;border:0;color:var(--acento);font-weight:600;padding:10px;cursor:pointer;min-height:44px;font-size:16px}
+  .corpo{padding:0 calc(16px + var(--dir)) calc(24px + var(--baixo)) calc(16px + var(--esq))}
+
+  #tela-escolher .conteudo{display:flex;flex-direction:column;flex:1;min-height:0}
+  #mapa{width:100%;height:46vh;display:block;touch-action:none;background:#cfe3ea}
+  .busca{width:100%;font-size:16px;padding:12px 14px;border:1px solid var(--linha);border-radius:12px;background:var(--papel);color:var(--tinta);margin:12px 0 4px}
+  .creditos{font-size:10px;color:var(--tinta-suave);text-align:right;margin:2px 4px 0}
+  ul.portos{list-style:none;margin:0;padding:0}
+  ul.portos li button{display:flex;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--linha);padding:14px 4px;cursor:pointer;align-items:center;gap:12px}
+  ul.portos .uf{color:var(--acento);font-weight:700;width:32px}
+  ul.portos .nome{flex:1}
+  ul.portos .marcado{color:var(--acento);font-weight:700}
+  @media (orientation: landscape) and (max-height: 600px){
+    #tela-escolher .conteudo{flex-direction:row}
+    #mapa{width:55%;height:calc(100vh - 60px)}
+    #tela-escolher .corpo{width:45%;overflow:auto;height:calc(100vh - 60px)}
+  }
+
+  .campo{margin:18px 0 0}
+  .campo label.titulo{display:block;font-weight:700;margin-bottom:6px}
+  textarea{width:100%;min-height:72px;font:16px/1.4 inherit;padding:10px 12px;border:1px solid var(--linha);border-radius:12px;background:var(--papel);color:var(--tinta)}
+  .check{display:flex;gap:10px;align-items:center;padding:8px 0;font-size:16px}
+  .check input{width:22px;height:22px;accent-color:var(--acento)}
+  input[type=range]{width:100%;accent-color:var(--acento)}
+  .nota{color:var(--tinta-suave);font-size:13px;margin:4px 0 0}
+  .btn{display:block;width:100%;text-align:center;padding:13px;border-radius:12px;border:1px solid var(--acento);background:none;color:var(--acento);font-weight:600;margin-top:18px;cursor:pointer;text-decoration:none}
+  .btn:disabled{opacity:.5}
+  .link{color:var(--acento)}
+  #previa{width:100%;margin:0;border-radius:10px}
+
+  dialog{border:0;border-radius:16px;padding:20px;max-width:340px;width:calc(100% - 32px);background:var(--papel);color:var(--tinta)}
+  dialog::backdrop{background:rgba(0,0,0,.45)}
+  dialog h3{margin:0 0 8px}
+  dialog .acoes{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+  dialog .acoes button{background:none;border:0;color:var(--acento);font-weight:700;padding:10px 12px;cursor:pointer}
+  .girando{width:28px;height:28px;border:3px solid var(--acento-fraco);border-top-color:var(--acento);border-radius:50%;animation:gira 1s linear infinite;margin:12px auto}
+  @keyframes gira{to{transform:rotate(360deg)}}
+  .toast{position:fixed;left:50%;bottom:calc(24px + var(--baixo));transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:20px;font-size:14px;z-index:10;max-width:90%;display:none}
+</style>
+</head>
+<body>
+
+<!-- display -->
+<section id="tela-display" class="tela">
+  <div class="barra">
+    <h1 id="titulo-porto">Tábua de Marés</h1>
+    <button class="btn-texto" data-ir="escolher">Tábua</button>
+    <button class="btn-texto" data-ir="ajustes">Ajustes</button>
+  </div>
+  <canvas id="grafico-fixo" class="led" aria-label="Gráfico da maré"></canvas>
+  <canvas id="painel" class="led" aria-label="Painel de LED"></canvas>
+  <div class="cartoes">
+    <div class="aviso-instalar" id="aviso-instalar"><button aria-label="Fechar" id="fechar-aviso">×</button>
+      <strong>Instale no iPhone:</strong> toque em <strong>Compartilhar</strong> (o quadrado com a seta) e depois em <strong>Adicionar à Tela de Início</strong>. O app abre em tela cheia e funciona sem internet depois do primeiro download.</div>
+    <div class="cartao"><h2>Maré agora</h2><p class="grande" id="mare-agora">—</p><p class="suave" id="tendencia"></p></div>
+    <div class="cartao"><h2>Próximas marés</h2><p class="lista-mares" id="proximas"></p></div>
+    <div class="cartao"><h2>Lua</h2><p class="lista-mares" id="lua" style="font-family:inherit;white-space:pre-line"></p></div>
+    <p class="rodape" id="rodape"></p>
+  </div>
+</section>
+
+<!-- escolha da tábua -->
+<section id="tela-escolher" class="tela">
+  <div class="cabecalho"><button class="voltar" data-voltar>‹ Voltar</button><h1>Escolha a tábua</h1></div>
+  <div class="conteudo">
+    <div><canvas id="mapa" aria-label="Mapa do litoral"></canvas><p class="creditos">Mapa: Natural Earth</p></div>
+    <div class="corpo">
+      <p class="nota">Toque num ponto do mapa (zoom com dois dedos ou toque duplo) ou escolha na lista.</p>
+      <input class="busca" id="busca" type="search" placeholder="Buscar porto ou estado" autocomplete="off">
+      <p class="nota" id="estado-lista"></p>
+      <ul class="portos" id="lista-portos"></ul>
+    </div>
+  </div>
+</section>
+
+<!-- ajustes -->
+<section id="tela-ajustes" class="tela">
+  <div class="cabecalho"><button class="voltar" data-voltar>‹ Voltar</button><h1>Ajustes do display</h1></div>
+  <div class="corpo">
+    <canvas id="previa" class="led"></canvas>
+    <div class="campo"><label class="titulo" for="descricao">Texto do letreiro (vazio = não mostra)</label>
+      <textarea id="descricao" maxlength="3999"></textarea></div>
+    <label class="check"><input type="checkbox" id="mostrar-atual"> Mostrar hora e maré atual</label>
+    <label class="check"><input type="checkbox" id="mostrar-proxima"> Mostrar próxima maré</label>
+    <label class="check"><input type="checkbox" id="mostrar-lua"> Mostrar próxima fase da lua</label>
+    <p class="nota">O gráfico da maré sempre aparece, como último item do ciclo.</p>
+    <div class="campo"><label class="titulo" for="brilho" id="rot-brilho">Brilho</label><input type="range" id="brilho" min="0" max="15" step="1"></div>
+    <div class="campo"><label class="titulo" for="velocidade" id="rot-velocidade">Velocidade</label><input type="range" id="velocidade" min="10" max="150" step="1"></div>
+    <div class="campo"><label class="titulo" for="duracao" id="rot-duracao">Duração do gráfico</label><input type="range" id="duracao" min="3" max="60" step="1"></div>
+    <div class="campo"><label class="titulo" for="modulos" id="rot-modulos">Tamanho do painel</label><input type="range" id="modulos" min="1" max="8" step="1"></div>
+    <div class="campo"><span class="titulo" style="font-weight:700">Cores</span>
+      <label class="check"><input type="radio" name="estilo" value="rgb" id="estilo-rgb"> Painel RGB (texto âmbar, água azul, agora vermelho)</label>
+      <label class="check"><input type="radio" name="estilo" value="max" id="estilo-max"> Painel clássico MAX7219 (vermelho)</label></div>
+    <div class="campo"><span class="titulo" style="font-weight:700">Privacidade</span>
+      <label class="check"><input type="checkbox" id="enviar-dados"> Enviar dados de uso para o suporte</label>
+      <p class="nota">Uma vez por dia, o app envia um código aleatório deste aparelho, o tipo de aparelho, a versão do sistema e do app, a tábua escolhida e o texto do letreiro. Serve só para suporte e não é compartilhado com ninguém. <a class="link" href="../privacidade.html" target="_blank" rel="noopener">Política de privacidade</a></p></div>
+    <button class="btn" id="baixar-de-novo">Baixar a tábua de novo agora</button>
+    <a class="btn" id="link-android" href="#" target="_blank" rel="noopener" style="display:none">Tem Android? Baixe o app</a>
+    <p class="nota" id="sobre" style="margin-top:18px;white-space:pre-line"></p>
+  </div>
+</section>
+
+<dialog id="dialogo"><h3 id="dlg-titulo"></h3><div id="dlg-corpo"></div><div class="acoes" id="dlg-acoes"></div></dialog>
+<div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
