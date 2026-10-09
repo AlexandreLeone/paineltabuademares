@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Doações e versão vitalícia · Tábua de Marés</title>
+<meta name="description" content="Apoie o projeto Tábua de Marés com uma doação ou tire a propaganda do app com a versão vitalícia (R$ 36,50, pagamento único por Pix).">
+<script src="qrcode.js"></script>
+<style>
+  :root { --tinta:#0b2436; --tinta-suave:#3d5163; --papel:#fbfcfa; --papel-2:#eef1ee; --acento:#0f6d82; --acento-fraco:#dbe9ea; --linha:#d7ddd4; --led:#e0932c; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --tinta:#e6edf0; --tinta-suave:#9fb0ba; --papel:#132029; --papel-2:#0a1218; --acento:#5fb8cb; --acento-fraco:#1d3a44; --linha:#24343e; }
+  }
+  * { box-sizing:border-box }
+  body { margin:0; background:var(--papel-2); color:var(--tinta); font:16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  main { max-width:720px; margin:0 auto; padding:28px 16px 40px; }
+  a { color:var(--acento) }
+  h1 { font-size:28px; margin:0 0 4px; line-height:1.2 }
+  .sub { color:var(--tinta-suave); margin:0 0 22px }
+  .cartao { background:var(--papel); border:1px solid var(--linha); border-radius:16px; padding:22px; margin-bottom:18px }
+  .cartao h2 { font-size:20px; margin:0 0 4px }
+  .preco { font-size:15px; color:var(--tinta-suave); margin:0 0 14px }
+  .preco strong { font-size:26px; color:var(--tinta) }
+  ol { padding-left:22px; margin:8px 0 }
+  ol li { margin:10px 0 }
+  .codigo { font:600 18px ui-monospace, SFMono-Regular, Menlo, monospace; background:var(--acento-fraco); padding:8px 12px; border-radius:10px; display:inline-block; letter-spacing:.04em }
+  input.codigo-campo { font:600 17px ui-monospace, SFMono-Regular, Menlo, monospace; width:100%; max-width:320px; padding:10px 12px; border:1px solid var(--linha); border-radius:10px; background:var(--papel); color:var(--tinta); text-transform:uppercase }
+  .pix { display:flex; gap:18px; align-items:flex-start; flex-wrap:wrap; margin-top:8px }
+  .qr { background:#fff; padding:10px; border-radius:12px; width:220px; height:220px; flex:none }
+  .qr svg { width:200px; height:200px; display:block }
+  .copia { flex:1; min-width:220px }
+  textarea { width:100%; height:92px; font:12px/1.4 ui-monospace, Menlo, monospace; border:1px solid var(--linha); border-radius:10px; padding:8px; background:var(--papel); color:var(--tinta); resize:none }
+  .btn { display:inline-block; border:0; border-radius:12px; padding:12px 18px; font:600 16px inherit; cursor:pointer; text-decoration:none; text-align:center }
+  .btn-principal { background:var(--acento); color:#fff }
+  .btn-sec { background:none; border:1px solid var(--acento); color:var(--acento) }
+  .aviso { background:#fdf3e1; color:#5a3d0c; border:1px solid #edd3a4; border-radius:12px; padding:12px 14px; font-size:14px }
+  .nota { color:var(--tinta-suave); font-size:14px }
+  .valor { display:flex; gap:8px; align-items:center; margin:6px 0 10px; flex-wrap:wrap }
+  .valor input { width:120px; font:600 18px inherit; padding:8px 10px; border:1px solid var(--linha); border-radius:10px; background:var(--papel); color:var(--tinta) }
+  footer { text-align:center; color:var(--tinta-suave); font-size:14px; line-height:1.8; margin-top:24px }
+  footer strong { color:var(--tinta) }
+</style>
+</head>
+<body>
+<main>
+  <p><a href="index.html">‹ paineltabuademares.com.br</a></p>
+  <h1>Doações e versão vitalícia</h1>
+  <p class="sub">O app Tábua de Marés é gratuito. Se ele é útil para você, considere apoiar o projeto.</p>
+
+  <section class="cartao" id="vitalicia">
+    <h2>Versão vitalícia, sem propaganda</h2>
+    <p class="preco"><strong>R$ 36,50</strong> · pagamento único, vale para sempre neste aparelho</p>
+    <p>Com o celular em pé, o letreiro do app começa pelo endereço do site. Na versão vitalícia ele não aparece mais. Isso vale para o app instalado pelo APK no Android e para o app web no iPhone. O painel de LED físico não tem propaganda.</p>
+    <ol>
+      <li><strong>Código do aparelho.</strong>
+        <div id="codigo-ok" style="display:none">Este é o código do seu aparelho: <span class="codigo" id="codigo-texto"></span></div>
+        <div id="codigo-pedir" style="display:none">
+          Abra o app, toque em <strong>Ajustes → Remover a propaganda</strong> e esta página abre com o código já preenchido. Ou digite o código que aparece no fim dos Ajustes:<br>
+          <input class="codigo-campo" id="codigo-campo" placeholder="APP-XXXXXXXXXXXX" maxlength="16" autocomplete="off">
+        </div>
+      </li>
+      <li><strong>Pague R$ 36,50 por Pix</strong>, com o QR code ou o "Pix copia e cola":
+        <div class="pix" id="pix-vitalicia"></div>
+      </li>
+      <li><strong>Envie o comprovante por e-mail.</strong> O botão abaixo abre o e-mail já com o código do aparelho no assunto; é só anexar o comprovante do Pix.<br>
+        <a class="btn btn-principal" id="enviar-email" href="#" style="margin-top:8px">Enviar comprovante por e-mail</a>
+      </li>
+      <li><strong>Pronto.</strong> Assim que o pagamento for confirmado (em até um dia útil), a propaganda some sozinha na próxima vez que o app sincronizar. Para conferir na hora, toque em <strong>Ajustes → Já paguei: verificar a liberação agora</strong>.</li>
+    </ol>
+    <p class="nota">Se trocar de celular ou reinstalar o app, o código muda. É só nos mandar o código novo junto com o comprovante antigo, e liberamos de novo sem custo.</p>
+  </section>
+
+  <section class="cartao" id="doacao">
+    <h2>Doação, de qualquer valor</h2>
+    <p>Ajuda a manter os servidores, as tábuas atualizadas todo ano e o desenvolvimento de novas versões.</p>
+    <div class="valor"><label for="valor-doacao">Valor (R$):</label><input id="valor-doacao" inputmode="decimal" placeholder="livre"><span class="nota">deixe em branco para escolher no banco</span></div>
+    <div class="pix" id="pix-doacao"></div>
+  </section>
+
+  <section class="cartao">
+    <h2>Painel de LED</h2>
+    <p>Quer as marés num painel de LED de verdade, sem precisar do celular? Veja o <a href="index.html#produtos">Painel Tábua de Marés</a>.</p>
+  </section>
+
+  <footer>
+    <strong>Criado por Alexandre Leone</strong><br>
+    <a href="https://www.paineltabuademares.com.br">www.paineltabuademares.com.br</a> · <a href="mailto:paineltabuademares@gmail.com">paineltabuademares@gmail.com</a><br>
+    <a href="privacidade.html">Política de privacidade</a>
+  </footer>
+</main>
+
+<script>
+'use strict';
+/*
+ * DADOS DO PIX: preencha aqui (a chave precisa estar cadastrada no seu banco).
+ * nome: até 25 caracteres, sem acento; cidade: até 15 caracteres, sem acento.
+ */
+const PIX = { chave: '', nome: '', cidade: '' };
+const VALOR_VITALICIA = '36.50';
+const EMAIL = 'paineltabuademares@gmail.com';
+
+// ---------- BR Code do Pix (padrão EMV do Banco Central) ----------
+const campo = (id, valor) => id + String(valor.length).padStart(2, '0') + valor;
+function crc16(texto) {
+  let crc = 0xFFFF;
+  for (let i = 0; i < texto.length; i++) {
+    crc ^= texto.charCodeAt(i) << 8;
+    for (let b = 0; b < 8; b++) crc = (crc & 0x8000) ? ((crc << 1) ^ 0x1021) & 0xFFFF : (crc << 1) & 0xFFFF;
+  }
+  return crc.toString(16).toUpperCase().padStart(4, '0');
+}
+const semAcento = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^A-Za-z0-9 ]/g, '');
+/** valor: '36.50' ou '' (a pessoa escolhe no banco); txid: até 25 letras/números, aparece no extrato. */
+function brCode(valor, txid) {
+  const conta = campo('00', 'br.gov.bcb.pix') + campo('01', PIX.chave.trim());
+  let p = campo('00', '01') + campo('26', conta) + campo('52', '0000') + campo('53', '986');
+  if (valor) p += campo('54', valor);
+  p += campo('58', 'BR') + campo('59', semAcento(PIX.nome).slice(0, 25)) + campo('60', semAcento(PIX.cidade).slice(0, 15));
+  p += campo('62', campo('05', (txid || '***').slice(0, 25)));
+  p += '6304';
+  return p + crc16(p);
+}
+
+function mostrarPix(destino, valor, txid, rotulo) {
+  const caixa = document.getElementById(destino);
+  caixa.innerHTML = '';
+  if (!PIX.chave) {
+    caixa.innerHTML = '<div class="aviso">A chave Pix ainda está sendo configurada. Volte em breve ou escreva para <a href="mailto:' + EMAIL + '">' + EMAIL + '</a>.</div>';
+    return;
+  }
+  const codigo = brCode(valor, txid);
+  const qr = document.createElement('div'); qr.className = 'qr';
+  caixa.appendChild(qr);
+  if (window.qrcode) {
+    const q = qrcode(0, 'M'); q.addData(codigo); q.make();
+    qr.innerHTML = q.createSvgTag({ cellSize: 4, margin: 0, scalable: true });
+  } else qr.textContent = 'QR code indisponível: use o copia e cola.';
+  const copia = document.createElement('div'); copia.className = 'copia';
+  copia.innerHTML = '<p class="nota" style="margin:0 0 4px">' + rotulo + '</p><textarea readonly></textarea>' +
+    '<button class="btn btn-sec" style="margin-top:8px">Copiar código Pix</button>' +
+    '<p class="nota" style="margin:8px 0 0">Chave Pix: <strong></strong></p>';
+  copia.querySelector('textarea').value = codigo;
+  copia.querySelector('strong').textContent = PIX.chave;
+  copia.querySelector('button').onclick = async (e) => {
+    try { await navigator.clipboard.writeText(codigo); e.target.textContent = 'Copiado!'; }
+    catch (_) { copia.querySelector('textarea').select(); e.target.textContent = 'Selecionado: copie'; }
+    setTimeout(() => { e.target.textContent = 'Copiar código Pix'; }, 2500);
+  };
+  caixa.appendChild(copia);
+}
+
+// ---------- código do aparelho (vem do app: doacoes.html?codigo=APP-...) ----------
+const VALIDO = /^APP-[0-9A-F]{8,32}$/;
+function atualizar(codigo) {
+  const ok = VALIDO.test(codigo);
+  // txid = código sem o hífen: assim o pagamento já aparece no extrato com o aparelho
+  mostrarPix('pix-vitalicia', VALOR_VITALICIA, ok ? codigo.replace('-', '') : 'VITALICIA', 'Pix copia e cola (R$ 36,50):');
+  const assunto = 'Versão vitalícia - ' + (ok ? codigo : 'código do aparelho');
+  const corpo = 'Olá! Paguei a versão vitalícia (R$ 36,50) do app Tábua de Marés.\n\n' +
+    'Código do aparelho: ' + (ok ? codigo : '(escreva aqui o código que aparece nos Ajustes do app)') + '\n' +
+    'Nome de quem pagou: \n\nO comprovante do Pix está anexado.\n';
+  document.getElementById('enviar-email').href = 'mailto:' + EMAIL + '?subject=' + encodeURIComponent(assunto) + '&body=' + encodeURIComponent(corpo);
+}
+const daUrl = (new URLSearchParams(location.search).get('codigo') || '').trim().toUpperCase();
+if (VALIDO.test(daUrl)) {
+  document.getElementById('codigo-ok').style.display = '';
+  document.getElementById('codigo-texto').textContent = daUrl;
+  atualizar(daUrl);
+} else {
+  document.getElementById('codigo-pedir').style.display = '';
+  const c = document.getElementById('codigo-campo');
+  c.addEventListener('input', () => atualizar(c.value.trim().toUpperCase()));
+  atualizar('');
+}
+
+// doação: valor livre
+const v = document.getElementById('valor-doacao');
+const doacao = () => {
+  const n = parseFloat(v.value.replace(',', '.'));
+  mostrarPix('pix-doacao', n > 0 ? n.toFixed(2) : '', 'DOACAO', n > 0 ? 'Pix copia e cola (R$ ' + n.toFixed(2).replace('.', ',') + '):' : 'Pix copia e cola (valor livre):');
+};
+v.addEventListener('input', doacao);
+doacao();
+</script>
+</body>
+</html>

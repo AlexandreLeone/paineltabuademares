@@ -6,10 +6,14 @@
  */
 'use strict';
 
-const VERSAO = '1.0.0';
+const VERSAO = '1.1.0';
 const URL_BACKEND = 'https://script.google.com/macros/s/AKfycbz6F9bqwkayP-zxt7BGdj2BwJyJLfYt64oW8SfE9K0sDi9mUcjjcRasBNyXbwAyI1QQ/exec';
 const URL_REGISTRO = 'https://script.google.com/macros/s/AKfycbz2CTGsbaUf6Yd5QL8IEA42O4XGqkFdCr7iDRgleGv5lkRd94wQkK9X0j_KkSjv9o4/exec';
 const URL_APK = 'https://drive.google.com/drive/folders/1RwnIj0q2sd1aMOpmRbRcfFxL4z3fKflv';
+/** Propaganda no início do letreiro (em pé) e créditos. */
+const SITE_LETREIRO = 'www.paineltabuademares.com.br';
+const URL_DOACOES = '../doacoes.html';
+const EMAIL_CONTATO = 'paineltabuademares@gmail.com';
 
 /** Fonte 5x7 (ASCII 32 a 126), a mesma do firmware DisplayMaresBRGB (glcdfont do Adafruit_GFX, licença BSD).
  *  5 bytes por caractere, um por coluna; bit 0 = linha de cima. */
@@ -152,9 +156,13 @@ async function sincronizarSeNecessario(forcar) {
   return false;
 }
 
-/** Log de vida do aparelho na planilha "Telefones - Painel de Marés" (o usuário pode desligar). */
-async function registrar() {
-  if (!URL_REGISTRO || !guardar.ler('enviarDados', true)) return;
+/**
+ * Log de vida do aparelho na planilha "Telefones - Painel de Marés" (o usuário
+ * pode desligar). A resposta diz se o aparelho é vitalício (coluna J da
+ * planilha) e tira a propaganda. forcar = botão "Já paguei: verificar agora".
+ */
+async function registrar(forcar) {
+  if (!URL_REGISTRO || (!forcar && !guardar.ler('enviarDados', true))) return null;
   const ua = navigator.userAgent;
   const ios = /iPhone|iPad|iPod/.exec(ua);
   const versaoIos = /OS (\d+)_(\d+)/.exec(ua);
@@ -165,7 +173,14 @@ async function registrar() {
     android: versaoIos ? 'iOS ' + versaoIos[1] + '.' + versaoIos[2] : (navigator.platform || ''),
   };
   const q = Object.entries(campos).map(([k, v]) => k + '=' + encodeURIComponent(v)).join('&');
-  try { await getBackend(URL_REGISTRO, q); } catch (_) { /* tenta de novo no próximo dia */ }
+  try {
+    const resp = JSON.parse(await getBackend(URL_REGISTRO, q));
+    if (typeof resp.vitalicio === 'boolean' && resp.vitalicio !== guardar.ler('vitalicio', false)) {
+      guardar.gravar('vitalicio', resp.vitalicio);
+      if ($('tela-display').classList.contains('ativa')) carregarDisplay();
+    }
+    return resp.vitalicio;
+  } catch (_) { return null; /* tenta de novo no próximo dia */ }
 }
 
 // ============================================================
@@ -302,12 +317,13 @@ class Painel {
   }
   temTexto() {
     const c = this.cfg;
-    return !!this.aviso || c.descricao.trim() !== '' || c.mostrarAtual || c.mostrarProximaMare || c.mostrarLua;
+    return !!this.aviso || this.mostrarSite || c.descricao.trim() !== '' || c.mostrarAtual || c.mostrarProximaMare || c.mostrarLua;
   }
   ordem() {
     if (this.modo === 'grafico') return ['GRAFICO'];
     if (this.aviso) return ['DESCRICAO'];
     const c = this.cfg, o = [];
+    if (this.mostrarSite) o.push('SITE');
     if (c.descricao.trim()) o.push('DESCRICAO');
     if (c.mostrarAtual) o.push('HORA');
     if (c.mostrarProximaMare) o.push('PROXIMA_MARE');
@@ -321,6 +337,7 @@ class Painel {
     this.estado = estado; this.inicio = performance.now();
     const t = agora();
     const txt = {
+      SITE: SITE_LETREIRO,
       DESCRICAO: this.aviso || this.cfg.descricao,
       HORA: textoHora(this.tabua, t),
       PROXIMA_MARE: textoProximaMare(this.tabua, t),
@@ -580,8 +597,11 @@ async function sincronizar(forcar) {
 function mostrarCartoes(tabua, lua) {
   const t = agora(), h = alturaEm(tabua, t);
   $('mare-agora').textContent = h === null ? '—' : h.toFixed(2).replace('.', ',') + ' m';
+  $('hora-agora').textContent = hora(t);
   const s = subindo(tabua, t);
-  $('tendencia').textContent = s === null ? 'Fora do período da tábua baixada' : (s ? '▲ subindo · ' : '▼ descendo · ') + hora(t);
+  const px = proximoIndice(tabua.ts, t);
+  $('tendencia').textContent = s === null ? 'Fora do período da tábua baixada'
+    : (s ? '▲ Subindo · preamar às ' : '▼ Descendo · baixa-mar às ') + hora(tabua.ts[px]);
   const dia = (ts) => new Date(ts * 1000).toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' }).replace('.', '');
   const p = proximoIndice(tabua.ts, t), linhas = [];
   for (let i = p; i < Math.min(p + 6, tabua.ts.length); i++) {
@@ -606,6 +626,8 @@ let wakeLock = null;
 async function aplicarOrientacao() {
   // deitado: ciclo completo em tela cheia; em pé: gráfico fixo em cima e só os textos embaixo
   painel.modo = deitado.matches ? 'ciclo' : 'textos';
+  // propaganda: o site no início do letreiro, só em pé e fora da versão vitalícia
+  painel.mostrarSite = !deitado.matches && !guardar.ler('vitalicio', false);
   painel.canvas.dataset.alturaFixa = deitado.matches ? '1' : '0';
   if (deitado.matches) painel.canvas.style.height = '';
   if (painel.tabua || painel.aviso) painel.definir(painel.cfg, painel.tabua, painel.lua, painel.aviso);
@@ -690,6 +712,7 @@ function abrirAjustes() {
     'Fases da lua por cálculo astronômico médio (o dia e a ordem das fases são corretos; o horário pode variar algumas horas).';
   $('link-android').style.display = /Android/.test(navigator.userAgent) ? '' : 'none';
   $('link-android').href = URL_APK;
+  configurarPropaganda();
 }
 function lerAjustes() {
   return {
@@ -709,6 +732,18 @@ function rotulos() {
 function aoMudarAjuste() {
   const c = lerAjustes(); salvarConfig(c); rotulos();
   previa.definir(c, guardar.ler('tabua', null), guardar.ler('lua', null));
+}
+
+/** Seção "Sem propaganda" dos ajustes. */
+function configurarPropaganda() {
+  const vit = guardar.ler('vitalicio', false);
+  $('texto-propaganda').textContent = vit
+    ? 'Versão vitalícia ativa: o letreiro não mostra mais o endereço do site. Obrigado pelo apoio!'
+    : 'Com o celular em pé, o letreiro começa pelo endereço do site, onde se compra o painel de LED. Para tirar, pague uma vez a versão vitalícia (R$ 36,50) por Pix na página que abre no botão abaixo. Ela já mostra o código deste aparelho e monta o e-mail com o comprovante. A liberação chega em até um dia depois que o pagamento for confirmado.';
+  $('remover-propaganda').style.display = vit ? 'none' : '';
+  $('verificar-vitalicio').style.display = vit ? 'none' : '';
+  $('remover-propaganda').href = URL_DOACOES + '?codigo=' + idAparelho();
+  $('link-doacoes').href = URL_DOACOES + '?codigo=' + idAparelho();
 }
 
 // ---------- início ----------
@@ -731,6 +766,13 @@ function iniciar() {
     $(id).addEventListener('input', aoMudarAjuste);
   }
   $('enviar-dados').addEventListener('change', (e) => { guardar.gravar('enviarDados', e.target.checked); if (e.target.checked) registrar(); });
+  $('verificar-vitalicio').addEventListener('click', async (e) => {
+    e.target.disabled = true;
+    const r = await registrar(true);
+    e.target.disabled = false;
+    configurarPropaganda();
+    toast(r ? 'Versão vitalícia ativa. Obrigado!' : r === false ? 'Ainda não encontramos a confirmação do pagamento. Ela pode levar até um dia.' : 'Sem conexão. Tente de novo mais tarde.');
+  });
   $('baixar-de-novo').addEventListener('click', async (e) => {
     const b = e.target; b.disabled = true;
     try { await sincronizarSeNecessario(true); toast('Tábua baixada de novo'); previa.definir(config(), guardar.ler('tabua', null), guardar.ler('lua', null)); }
