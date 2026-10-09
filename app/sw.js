@@ -4,7 +4,7 @@
  * no localStorage); pedidos ao Apps Script vão sempre direto para a rede.
  * Ao mudar qualquer arquivo do app, suba a VERSAO abaixo.
  */
-const VERSAO = 'mares-web-1.1.0';
+const VERSAO = 'mares-web-1.1.1';
 const ARQUIVOS = ['./', 'index.html', 'app.js', 'manifest.webmanifest', 'litoral.json', 'coordenadas_portos.json',
   'icone-192.png', 'icone-512.png', 'apple-touch-icon.png'];
 
