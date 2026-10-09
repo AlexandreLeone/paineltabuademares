@@ -139,6 +139,7 @@
     <div class="cartao"><h2>Próximas marés</h2><p class="lista-mares" id="proximas"></p></div>
     <div class="cartao"><h2>Lua</h2><p class="lista-mares" id="lua" style="font-family:inherit;white-space:pre-line"></p></div>
     <p class="rodape" id="rodape"></p>
+    <p class="creditos-app">Criado por Alexandre Leone<br><a href="https://www.paineltabuademares.com.br" target="_blank" rel="noopener">www.paineltabuademares.com.br</a></p>
   </div>
 </section>
 
@@ -171,14 +172,10 @@
     <div class="campo"><label class="titulo" for="velocidade" id="rot-velocidade">Velocidade</label><input type="range" id="velocidade" min="10" max="150" step="1"></div>
     <div class="campo"><label class="titulo" for="duracao" id="rot-duracao">Duração do gráfico</label><input type="range" id="duracao" min="3" max="60" step="1"></div>
     <div class="campo"><label class="titulo" for="modulos" id="rot-modulos">Tamanho do painel</label><input type="range" id="modulos" min="1" max="8" step="1"></div>
-    <div class="campo"><span class="titulo" style="font-weight:700">Cores</span>
-      <label class="check"><input type="radio" name="estilo" value="rgb" id="estilo-rgb"> Painel RGB (texto âmbar, água azul, agora vermelho)</label>
-      <label class="check"><input type="radio" name="estilo" value="max" id="estilo-max"> Painel clássico MAX7219 (vermelho)</label></div>
     <div class="campo"><span class="titulo" style="font-weight:700">Privacidade</span>
       <label class="check"><input type="checkbox" id="enviar-dados"> Enviar dados de uso para o suporte</label>
       <p class="nota">Uma vez por dia, o app envia um código aleatório deste aparelho, o tipo de aparelho, a versão do sistema e do app, a tábua escolhida e o texto do letreiro. Serve só para suporte e não é compartilhado com ninguém. <a class="link" href="../privacidade.html" target="_blank" rel="noopener">Política de privacidade</a></p></div>
-    <div class="campo"><span class="titulo" style="font-weight:700">Sem propaganda</span>
-      <p class="nota" id="texto-propaganda"></p>
+    <div class="campo">
       <a class="btn" id="remover-propaganda" href="../doacoes.html" target="_blank" rel="noopener" style="background:var(--acento);color:#fff">Remover a propaganda (vitalício, R$ 36,50)</a>
       <button class="btn" id="verificar-vitalicio" style="border:0;margin-top:6px">Já paguei: verificar a liberação agora</button></div>
     <button class="btn" id="baixar-de-novo">Baixar a tábua de novo agora</button>

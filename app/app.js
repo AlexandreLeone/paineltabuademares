@@ -6,7 +6,7 @@
  */
 'use strict';
 
-const VERSAO = '1.1.0';
+const VERSAO = '1.1.1';
 const URL_BACKEND = 'https://script.google.com/macros/s/AKfycbz6F9bqwkayP-zxt7BGdj2BwJyJLfYt64oW8SfE9K0sDi9mUcjjcRasBNyXbwAyI1QQ/exec';
 const URL_REGISTRO = 'https://script.google.com/macros/s/AKfycbz2CTGsbaUf6Yd5QL8IEA42O4XGqkFdCr7iDRgleGv5lkRd94wQkK9X0j_KkSjv9o4/exec';
 const URL_APK = 'https://drive.google.com/drive/folders/1RwnIj0q2sd1aMOpmRbRcfFxL4z3fKflv';
@@ -37,7 +37,8 @@ const CONFIG_PADRAO = {
   descricao: '', mostrarAtual: true, mostrarProximaMare: true, mostrarLua: true,
   brilho: 10, velocidadeMs: 40, duracaoGraficoS: 10, modulos: 4, estiloRgb: true,
 };
-const config = () => Object.assign({}, CONFIG_PADRAO, guardar.ler('config', {}));
+// cores: sempre o painel colorido (a escolha saiu dos ajustes)
+const config = () => Object.assign({}, CONFIG_PADRAO, guardar.ler('config', {}), { estiloRgb: true });
 const salvarConfig = (c) => guardar.gravar('config', c);
 
 /** ID deste aparelho na planilha: aleatório, criado na primeira vez (mesmo formato do Android). */
@@ -626,8 +627,8 @@ let wakeLock = null;
 async function aplicarOrientacao() {
   // deitado: ciclo completo em tela cheia; em pé: gráfico fixo em cima e só os textos embaixo
   painel.modo = deitado.matches ? 'ciclo' : 'textos';
-  // propaganda: o site no início do letreiro, só em pé e fora da versão vitalícia
-  painel.mostrarSite = !deitado.matches && !guardar.ler('vitalicio', false);
+  // propaganda: o site no início do letreiro, em pé e deitado, fora da versão vitalícia
+  painel.mostrarSite = !guardar.ler('vitalicio', false);
   painel.canvas.dataset.alturaFixa = deitado.matches ? '1' : '0';
   if (deitado.matches) painel.canvas.style.height = '';
   if (painel.tabua || painel.aviso) painel.definir(painel.cfg, painel.tabua, painel.lua, painel.aviso);
@@ -703,7 +704,6 @@ function abrirAjustes() {
   $('descricao').value = c.descricao;
   $('mostrar-atual').checked = c.mostrarAtual; $('mostrar-proxima').checked = c.mostrarProximaMare; $('mostrar-lua').checked = c.mostrarLua;
   $('brilho').value = c.brilho; $('velocidade').value = c.velocidadeMs; $('duracao').value = c.duracaoGraficoS; $('modulos').value = c.modulos;
-  $(c.estiloRgb ? 'estilo-rgb' : 'estilo-max').checked = true;
   $('enviar-dados').checked = guardar.ler('enviarDados', true);
   rotulos();
   previa.definir(c, guardar.ler('tabua', null), guardar.ler('lua', null));
@@ -719,7 +719,7 @@ function lerAjustes() {
     descricao: $('descricao').value.slice(0, 3999), mostrarAtual: $('mostrar-atual').checked,
     mostrarProximaMare: $('mostrar-proxima').checked, mostrarLua: $('mostrar-lua').checked,
     brilho: +$('brilho').value, velocidadeMs: +$('velocidade').value, duracaoGraficoS: +$('duracao').value,
-    modulos: +$('modulos').value, estiloRgb: $('estilo-rgb').checked,
+    modulos: +$('modulos').value, estiloRgb: true,
   };
 }
 function rotulos() {
@@ -737,9 +737,6 @@ function aoMudarAjuste() {
 /** Seção "Sem propaganda" dos ajustes. */
 function configurarPropaganda() {
   const vit = guardar.ler('vitalicio', false);
-  $('texto-propaganda').textContent = vit
-    ? 'Versão vitalícia ativa: o letreiro não mostra mais o endereço do site. Obrigado pelo apoio!'
-    : 'Com o celular em pé, o letreiro começa pelo endereço do site, onde se compra o painel de LED. Para tirar, pague uma vez a versão vitalícia (R$ 36,50) por Pix na página que abre no botão abaixo. Ela já mostra o código deste aparelho e monta o e-mail com o comprovante. A liberação chega em até um dia depois que o pagamento for confirmado.';
   $('remover-propaganda').style.display = vit ? 'none' : '';
   $('verificar-vitalicio').style.display = vit ? 'none' : '';
   $('remover-propaganda').href = URL_DOACOES + '?codigo=' + idAparelho();
@@ -762,7 +759,7 @@ function iniciar() {
     location.hash = '';
   }));
   $('busca').addEventListener('input', filtrar);
-  for (const id of ['descricao', 'mostrar-atual', 'mostrar-proxima', 'mostrar-lua', 'brilho', 'velocidade', 'duracao', 'modulos', 'estilo-rgb', 'estilo-max']) {
+  for (const id of ['descricao', 'mostrar-atual', 'mostrar-proxima', 'mostrar-lua', 'brilho', 'velocidade', 'duracao', 'modulos']) {
     $(id).addEventListener('input', aoMudarAjuste);
   }
   $('enviar-dados').addEventListener('change', (e) => { guardar.gravar('enviarDados', e.target.checked); if (e.target.checked) registrar(); });
