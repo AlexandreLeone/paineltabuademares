@@ -52,6 +52,11 @@
   .cartao h2{margin:0 0 6px;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--tinta-suave)}
   .grande{font-size:32px;font-weight:700;margin:0}
   .suave{color:var(--tinta-suave);font-size:15px;margin:0}
+  .duas-colunas{display:flex;text-align:center}
+  .duas-colunas>div{flex:1}
+  .situacao{text-align:center;margin:10px 0 0 !important}
+  .creditos-app{text-align:center;color:var(--tinta);font-size:14px;margin:22px 0 0;line-height:1.6}
+  .creditos-app a{color:var(--acento)}
   .lista-mares{font:15px/1.9 ui-monospace,SFMono-Regular,Menlo,monospace;white-space:pre;margin:0;overflow-x:auto}
   .rodape{color:var(--tinta-suave);font-size:12px;margin:8px 0 0}
   .aviso-instalar{display:none;background:var(--acento-fraco);color:var(--tinta);border-radius:12px;padding:12px 14px;font-size:14px;margin-bottom:12px}
@@ -124,7 +129,13 @@
   <div class="cartoes">
     <div class="aviso-instalar" id="aviso-instalar"><button aria-label="Fechar" id="fechar-aviso">×</button>
       <strong>Instale no iPhone:</strong> toque em <strong>Compartilhar</strong> (o quadrado com a seta) e depois em <strong>Adicionar à Tela de Início</strong>. O app abre em tela cheia e funciona sem internet depois do primeiro download.</div>
-    <div class="cartao"><h2>Maré agora</h2><p class="grande" id="mare-agora">—</p><p class="suave" id="tendencia"></p></div>
+    <div class="cartao">
+      <div class="duas-colunas">
+        <div><h2>Agora</h2><p class="grande" id="hora-agora">—</p></div>
+        <div><h2>Maré</h2><p class="grande" id="mare-agora">—</p></div>
+      </div>
+      <h2 class="situacao" id="tendencia"></h2>
+    </div>
     <div class="cartao"><h2>Próximas marés</h2><p class="lista-mares" id="proximas"></p></div>
     <div class="cartao"><h2>Lua</h2><p class="lista-mares" id="lua" style="font-family:inherit;white-space:pre-line"></p></div>
     <p class="rodape" id="rodape"></p>
@@ -166,8 +177,13 @@
     <div class="campo"><span class="titulo" style="font-weight:700">Privacidade</span>
       <label class="check"><input type="checkbox" id="enviar-dados"> Enviar dados de uso para o suporte</label>
       <p class="nota">Uma vez por dia, o app envia um código aleatório deste aparelho, o tipo de aparelho, a versão do sistema e do app, a tábua escolhida e o texto do letreiro. Serve só para suporte e não é compartilhado com ninguém. <a class="link" href="../privacidade.html" target="_blank" rel="noopener">Política de privacidade</a></p></div>
+    <div class="campo"><span class="titulo" style="font-weight:700">Sem propaganda</span>
+      <p class="nota" id="texto-propaganda"></p>
+      <a class="btn" id="remover-propaganda" href="../doacoes.html" target="_blank" rel="noopener" style="background:var(--acento);color:#fff">Remover a propaganda (vitalício, R$ 36,50)</a>
+      <button class="btn" id="verificar-vitalicio" style="border:0;margin-top:6px">Já paguei: verificar a liberação agora</button></div>
     <button class="btn" id="baixar-de-novo">Baixar a tábua de novo agora</button>
     <a class="btn" id="link-android" href="#" target="_blank" rel="noopener" style="display:none">Tem Android? Baixe o app</a>
+    <p class="creditos-app">Criado por Alexandre Leone<br><a href="https://www.paineltabuademares.com.br" target="_blank" rel="noopener">www.paineltabuademares.com.br</a><br><a href="mailto:paineltabuademares@gmail.com">paineltabuademares@gmail.com</a><br><a id="link-doacoes" href="../doacoes.html" target="_blank" rel="noopener">Doações e versão vitalícia</a></p>
     <p class="nota" id="sobre" style="margin-top:18px;white-space:pre-line"></p>
   </div>
 </section>
