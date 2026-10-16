@@ -85,6 +85,7 @@
   .hero-note{font-size:.85rem;color:var(--ink-soft)}
 
   /* Hero visual: LED matrix mockup — o mesmo gráfico animado do manual */
+  .hero-visual{display:flex;flex-direction:column;gap:16px}
   .panel-mock{
     background:#0b1f27;
     border-radius:20px;
@@ -129,6 +130,9 @@
   .step .num{width:34px;height:34px;border-radius:50%;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;margin-bottom:14px;font-size:.95rem}
   .step h3{margin:0 0 6px;font-size:1.02rem}
   .step p{margin:0;color:var(--ink-soft);font-size:.93rem}
+  .config-shot{margin:16px 0 0;padding:0}
+  .config-shot img{display:block;width:100%;max-width:220px;border-radius:10px;border:1px solid var(--line);box-shadow:var(--card-shadow)}
+  .config-shot figcaption{margin-top:8px;font-size:.78rem;color:var(--ink-soft)}
 
   /* Specs */
   .specs{background:var(--bg-alt);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--card-shadow)}
@@ -206,19 +210,26 @@
         </div>
         <p class="hero-note">Envio para todo o Brasil · Configuração sem aplicativo, direto pelo navegador do celular</p>
       </div>
-      <div class="panel-mock" aria-hidden="true">
-        <div class="label">Pré-visualização do painel</div>
-        <div class="rig-web" id="rig-web"></div>
-        <div class="legenda-web">
-          <span><span class="sw sw-on"></span>nível da água</span>
-          <span><span class="sw sw-off"></span>ar</span>
-          <span><span class="sw sw-now"></span>marca de "agora"</span>
+      <div class="hero-visual">
+        <div class="panel-mock" aria-hidden="true">
+          <div class="label">Pré-visualização do painel</div>
+          <div class="rig-web" id="rig-web"></div>
+          <div class="legenda-web">
+            <span><span class="sw sw-on"></span>nível da água</span>
+            <span><span class="sw sw-off"></span>ar</span>
+            <span><span class="sw sw-now"></span>marca de "agora"</span>
+          </div>
+          <div class="seg-web" id="seg-web">
+            <button data-dir="subindo" class="ativo">Maré subindo</button>
+            <button data-dir="descendo">Maré descendo</button>
+          </div>
+          <p class="panel-caption">Ilustração do display — fotos reais do produto em breve</p>
         </div>
-        <div class="seg-web" id="seg-web">
-          <button data-dir="subindo" class="ativo">Maré subindo</button>
-          <button data-dir="descendo">Maré descendo</button>
+        <div class="panel-mock" aria-hidden="true">
+          <div class="label">Texto personalizado no letreiro</div>
+          <div class="rig-web" id="rig-web-texto"></div>
+          <p class="panel-caption">Sua mensagem rolando no painel — até 3999 caracteres, editável pela tela de configuração</p>
         </div>
-        <p class="panel-caption">Ilustração do display — fotos reais do produto em breve</p>
       </div>
     </div>
   </section>
@@ -272,6 +283,10 @@
           <div class="num">2</div>
           <h3>Conecte o Wi-Fi e escolha o porto</h3>
           <p>Pelo navegador do celular, sem instalar nada: escolha a rede Wi-Fi do local e o porto mais próximo numa lista com o litoral inteiro.</p>
+          <figure class="config-shot">
+            <img src="img/tela-configuracao.png" alt="Tela de configuração do painel, aberta no navegador do celular" loading="lazy">
+            <figcaption>A própria tela de configuração, aberta no navegador — sem instalar nada</figcaption>
+          </figure>
         </div>
         <div class="step">
           <div class="num">3</div>
@@ -462,6 +477,36 @@ function wireCTA(id, url, disabledLabel){
     b.classList.add('ativo'); dir=b.dataset.dir; render();
   });
   setInterval(()=>{ fAgora=(fAgora+0.02)%1; render(); },450);
+  render();
+})();
+
+// Letreiro animado (mesma fonte 5x7 do firmware -- Adafruit GFX glcdfont, ASCII 32-126)
+(function(){
+  const HEX='000000000000005F00000007000700147F147F14242A7F2A12231308646236495620500008070300001C2241000041221C002A1C7F1C2A08083E080800807030000808080808000060600020100804023E5149453E00427F400072494949462141494D331814127F1027454545393C4A49493141211109073649494936464949291E0000140000004034000000081422411414141414004122140802015909063E415D594E7C1211127C7F494949363E414141227F4141413E7F494949417F090909013E414151737F0808087F00417F41002040413F017F081422417F404040407F021C027F7F0408107F3E4141413E7F090909063E4151215E7F09192946264949493203017F01033F4040403F1F2040201F3F4038403F631408146303047804036159494D43007F4141410204081020004141417F04020102044040404040000307080020545478407F284444383844444428384444287F385454541800087E090218A4A49C787F0804047800447D40002040403D007F1028440000417F40007C047804787C080404783844444438FC1824241818242418FC7C08040408485454542404043F44243C4040207C1C2040201C3C4030403C44281028444C9090907C4464544C440008364100000077000000413608000201020402';
+  const FONTE=[]; for(let i=0;i<HEX.length;i+=2) FONTE.push(parseInt(HEX.substr(i,2),16));
+  const PRIMEIRO=32, LARGURA=32;
+  const TEXTO='A MARE DA SUA PRAIA, SEMPRE A VISTA';
+  const rig=document.getElementById('rig-web-texto');
+  if (!rig) return;
+  const dots=[]; for(let i=0;i<LARGURA*8;i++){const d=document.createElement('div');d.className='dot';rig.appendChild(d);dots.push(d);}
+  const colsTexto=[];
+  for (const ch of TEXTO){
+    const codigo=ch.charCodeAt(0), idx=(codigo-PRIMEIRO)*5;
+    if (codigo<32||codigo>126){ colsTexto.push(0,0,0,0,0); } else { for(let c=0;c<5;c++) colsTexto.push(FONTE[idx+c]); }
+    colsTexto.push(0); // espaco entre caracteres
+  }
+  const totalCiclo=colsTexto.length+LARGURA; // + vao em branco do tamanho do painel, como no firmware
+  let offset=0;
+  function render(){
+    for(let c=0;c<LARGURA;c++){
+      const idx=(offset+c)%totalCiclo;
+      const byte = idx<colsTexto.length ? colsTexto[idx] : 0;
+      for(let row=0;row<8;row++){
+        dots[row*LARGURA+c].classList.toggle('on', row<7 && !!(byte & (1<<row)));
+      }
+    }
+  }
+  setInterval(()=>{ offset=(offset+1)%totalCiclo; render(); },80);
   render();
 })();
 </script>
