@@ -171,6 +171,9 @@
   @media (max-width:520px){.gallery{grid-template-columns:1fr}}
   .ph{aspect-ratio:4/3;border-radius:14px;border:1.5px dashed var(--line);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:var(--ink-soft);font-size:.82rem;text-align:center;padding:16px;background:var(--bg-alt)}
   .ph .ico{font-size:1.6rem;opacity:.6}
+  .foto{margin:0}
+  .foto img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:14px;box-shadow:var(--card-shadow)}
+  .foto figcaption{margin-top:8px;font-size:.8rem;color:var(--ink-soft);text-align:center}
 
   footer.site{border-top:1px solid var(--line);padding-block:32px;margin-top:20px}
   footer.site .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;align-items:center}
@@ -355,10 +358,10 @@
   <section id="fotos">
     <div class="wrap">
       <p class="kicker">Fotos</p>
-      <h2>Em breve</h2>
-      <p class="section-lede">As fotos reais do produto acabado entram aqui assim que ficarem prontas.</p>
+      <h2>O painel de verdade</h2>
+      <p class="section-lede">Painel instalado e funcionando. As próximas fotos (instalação e acabamento) entram assim que ficarem prontas.</p>
       <div class="gallery">
-        <div class="ph"><span class="ico">📷</span>Foto do painel ligado</div>
+        <figure class="foto"><img src="img/painel-ligado.jpg" alt="Painel de Marés instalado na parede, aceso, mostrando o gráfico da maré"><figcaption>Painel ligado, mostrando o gráfico da maré</figcaption></figure>
         <div class="ph"><span class="ico">📷</span>Foto de instalação</div>
         <div class="ph"><span class="ico">📷</span>Foto dos detalhes/acabamento</div>
       </div>
