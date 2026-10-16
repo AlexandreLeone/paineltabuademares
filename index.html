@@ -84,7 +84,7 @@
   .btn[disabled], .btn.is-disabled{opacity:.55;cursor:not-allowed;pointer-events:none}
   .hero-note{font-size:.85rem;color:var(--ink-soft)}
 
-  /* Hero visual: LED matrix mockup */
+  /* Hero visual: LED matrix mockup — o mesmo gráfico animado do manual */
   .panel-mock{
     background:#0b1f27;
     border-radius:20px;
@@ -93,9 +93,19 @@
     border:1px solid rgba(255,255,255,.05);
   }
   .panel-mock .label{color:#7fd0da;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;font-weight:700;margin-bottom:10px;opacity:.8}
-  .led-grid{display:grid;grid-template-columns:repeat(32,1fr);gap:2px;aspect-ratio:32/8;margin-bottom:14px}
-  .led-grid i{display:block;width:100%;padding-bottom:100%;border-radius:1px;background:#12323b}
-  .led-grid i.on{background:#ff7a1a;box-shadow:0 0 4px rgba(255,122,26,.7)}
+  .rig-web{background:#0c2431;padding:10px;border-radius:10px;display:grid;grid-template-columns:repeat(32,1fr);gap:2px;margin-bottom:14px}
+  .rig-web .dot{aspect-ratio:1;border-radius:50%;background:#12323b}
+  .rig-web .dot.on{background:#e0932c;box-shadow:0 0 4px 1px rgba(224,147,44,.65)}
+  .rig-web .dot.agora{background:#e8382d;box-shadow:0 0 4px 1px rgba(232,56,45,.6)}
+  .legenda-web{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:#9fb3ba;align-items:center;margin-bottom:12px}
+  .legenda-web .sw{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px}
+  .legenda-web .sw-on{background:#e0932c}
+  .legenda-web .sw-off{background:#12323b;border:1px solid #24485c}
+  .legenda-web .sw-now{background:#12323b;border:1.5px solid #e0932c}
+  .seg-web{display:inline-flex;border:1px solid rgba(255,255,255,.14);border-radius:8px;overflow:hidden;margin-bottom:14px}
+  .seg-web button{font-family:inherit;font-size:12px;background:transparent;color:#9fb3ba;border:none;padding:7px 14px;cursor:pointer}
+  .seg-web button+button{border-left:1px solid rgba(255,255,255,.14)}
+  .seg-web button.ativo{background:rgba(224,147,44,.18);color:#e0932c;font-weight:600}
   .panel-caption{color:#9fb3ba;font-size:.78rem;text-align:center}
 
   /* Section headings */
@@ -158,15 +168,6 @@
   .ph{aspect-ratio:4/3;border-radius:14px;border:1.5px dashed var(--line);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:var(--ink-soft);font-size:.82rem;text-align:center;padding:16px;background:var(--bg-alt)}
   .ph .ico{font-size:1.6rem;opacity:.6}
 
-  /* CTA band */
-  .cta-band{background:var(--brand);color:#fff;border-radius:24px;padding:44px 36px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:24px}
-  .cta-band h2{color:#fff;margin:0 0 6px}
-  .cta-band p{margin:0;color:rgba(255,255,255,.85);max-width:46ch}
-  .cta-band .btn-primary{background:#fff;color:var(--brand-dark)}
-  .cta-band .btn-primary:hover{background:#eef7f8}
-  .cta-band .btn-outline{border-color:rgba(255,255,255,.5);color:#fff}
-  .cta-band .btn-outline:hover{border-color:#fff}
-
   footer.site{border-top:1px solid var(--line);padding-block:32px;margin-top:20px}
   footer.site .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:16px;align-items:center}
   footer.site p{margin:0;color:var(--ink-soft);font-size:.85rem}
@@ -186,7 +187,6 @@
       <a href="#produtos">Produtos</a>
       <a href="manual.html">Manual</a>
       <a href="app/">App</a>
-      <a href="#contato">Contato</a>
     </nav>
     <a class="btn-wa-small" id="wa-header" href="#" target="_blank" rel="noopener">Falar no WhatsApp</a>
   </div>
@@ -208,7 +208,16 @@
       </div>
       <div class="panel-mock" aria-hidden="true">
         <div class="label">Pré-visualização do painel</div>
-        <div class="led-grid" id="led-grid"></div>
+        <div class="rig-web" id="rig-web"></div>
+        <div class="legenda-web">
+          <span><span class="sw sw-on"></span>nível da água</span>
+          <span><span class="sw sw-off"></span>ar</span>
+          <span><span class="sw sw-now"></span>marca de "agora"</span>
+        </div>
+        <div class="seg-web" id="seg-web">
+          <button data-dir="subindo" class="ativo">Maré subindo</button>
+          <button data-dir="descendo">Maré descendo</button>
+        </div>
         <p class="panel-caption">Ilustração do display — fotos reais do produto em breve</p>
       </div>
     </div>
@@ -218,7 +227,7 @@
     <div class="wrap">
       <p class="kicker">Recursos</p>
       <h2>Feito pra quem vive perto da maré</h2>
-      <p class="section-lede">Pescadores, marinas, casas de praia e quem simplesmente gosta de saber a hora certa da maré sem abrir o celular.</p>
+      <p class="section-lede">Pescadores, marinas, casas de praia, restaurantes e pousadas por onde passam turistas que precisam da informação da maré — e quem simplesmente gosta de saber a hora certa sem abrir o celular.</p>
       <div class="features">
         <div class="feature">
           <div class="ico">🌊</div>
@@ -271,7 +280,7 @@
         </div>
       </div>
       <p style="margin-top:28px;font-size:.92rem;color:var(--ink-soft)">Já tem o seu? Veja o <a href="manual.html" style="color:var(--brand);font-weight:600">manual completo de uso</a>.</p>
-      <p style="margin-top:8px;font-size:.92rem;color:var(--ink-soft)">Quer o painel também no celular? Use o <a href="app/" style="color:var(--brand);font-weight:600">app Tábua de Marés</a>: abre no iPhone e no Android, e dá para instalar na tela de início.</p>
+      <p style="margin-top:8px;font-size:.92rem;color:var(--ink-soft)">Quer o painel também no celular? No <strong>Android</strong>, baixe o <a href="https://github.com/AlexandreLeone/Painel-Mares-App-Android/releases" style="color:var(--brand);font-weight:600" target="_blank" rel="noopener">app Tábua de Marés (APK)</a> — versão completa, com widget na tela inicial. No <strong>iPhone</strong>, use o <a href="app/" style="color:var(--brand);font-weight:600">app web</a>: a Apple não permite instalar aplicativos fora da App Store, então essa é a forma de ter o painel na tela de início.</p>
     </div>
   </section>
 
@@ -281,10 +290,12 @@
       <h2>Ficha técnica</h2>
       <div class="specs">
         <table>
-          <tr><td>Painel</td><td>Matriz de LED (MAX7219), módulos 8×8, de 1 a 8 módulos</td></tr>
+          <tr><td>Painel</td><td>Matriz de LED (MAX7219), módulos 8×8</td></tr>
           <tr><td>Processador</td><td>ESP32 com Wi-Fi integrado</td></tr>
           <tr><td>Alimentação</td><td>USB-C, 5V</td></tr>
-          <tr><td>Ajustes</td><td>Brilho, velocidade de rolagem e número de módulos, pela tela de configuração</td></tr>
+          <tr><td>Ajustes</td><td>Brilho e velocidade de rolagem, pela tela de configuração</td></tr>
+          <tr><td>Texto personalizado</td><td>Mensagem própria no letreiro, até 3999 caracteres</td></tr>
+          <tr><td>Blocos de informação</td><td>Liga/desliga individualmente: hora e maré atual, próxima maré, fase da lua (o gráfico sempre aparece)</td></tr>
           <tr><td>Redes Wi-Fi</td><td>Até 5 memorizadas, conecta sozinho na mais próxima conhecida</td></tr>
           <tr><td>Fonte dos dados</td><td>Tábuas oficiais da Marinha do Brasil (DHN) — 54 portos, ano 2026</td></tr>
         </table>
@@ -296,7 +307,7 @@
     <div class="wrap">
       <p class="kicker">Produtos</p>
       <h2>Preço</h2>
-      <p class="section-lede">Fale no WhatsApp pra combinar tamanho do painel, cor da moldura e prazo de entrega.</p>
+      <p class="section-lede">Fale no WhatsApp pra combinar o prazo de entrega.</p>
       <div class="products">
         <div class="price-card featured">
           <span class="tag">Produto principal</span>
@@ -323,7 +334,6 @@
           <a class="btn btn-outline" id="wa-produto-carregador" href="#" target="_blank" rel="noopener">Falar no WhatsApp</a>
         </div>
       </div>
-      <p style="margin-top:28px;font-size:.92rem;color:var(--ink-soft)">Em desenvolvimento: o <strong>Painel RGB</strong>, uma matriz 8×8 colorida. <a href="painel-rgb.html" style="color:var(--brand);font-weight:600">Veja como ele funciona</a> ou leia o <a href="manual-rgb.html" style="color:var(--brand);font-weight:600">manual do RGB</a>.</p>
     </div>
   </section>
 
@@ -349,20 +359,6 @@
     </div>
   </section>
 
-  <section id="contato">
-    <div class="wrap">
-      <div class="cta-band">
-        <div>
-          <h2>Quer o seu?</h2>
-          <p>Fale no WhatsApp pra combinar tamanho, cor e prazo — ou veja o anúncio no Mercado Livre.</p>
-        </div>
-        <div class="cta-row" style="margin:0">
-          <a class="btn btn-primary" id="wa-band" href="#" target="_blank" rel="noopener">Falar no WhatsApp</a>
-          <a class="btn btn-outline" id="ml-band" href="#" target="_blank" rel="noopener">Mercado Livre</a>
-        </div>
-      </div>
-    </div>
-  </section>
 
 </main>
 
@@ -374,7 +370,6 @@
       <a href="#produtos">Produtos</a>
       <a href="manual.html">Manual</a>
       <a href="app/">App</a>
-      <a href="#contato">Contato</a>
     </div>
   </div>
 </footer>
@@ -417,32 +412,57 @@ function wireCTA(id, url, disabledLabel){
 
 (function init(){
   const waLink = buildWhatsAppLink();
-  ["wa-header","wa-hero","wa-produto-painel","wa-produto-carregador","wa-band"].forEach(id =>
+  ["wa-header","wa-hero","wa-produto-painel","wa-produto-carregador"].forEach(id =>
     wireCTA(id, waLink, "WhatsApp em breve")
   );
 
   const mlLink = CONFIG.mercadoLivreUrl;
-  ["ml-hero","ml-band"].forEach(id =>
+  ["ml-hero"].forEach(id =>
     wireCTA(id, mlLink, "Anúncio em breve")
   );
 
   document.getElementById("year").textContent = new Date().getFullYear();
+})();
 
-  // Monta o mockup do painel de LED (padrão fixo, ilustrativo)
-  const grid = document.getElementById("led-grid");
-  if (grid){
-    const cols = 32, rows = 8;
-    // silhueta simples de onda (curva de maré) pra acender alguns pixels
-    const wave = [3,2,2,1,1,0,0,0,1,1,2,3,4,5,6,6,7,7,6,6,5,4,3,2,2,1,1,2,3,4,5,6];
-    let html = "";
-    for (let r=0;r<rows;r++){
-      for (let c=0;c<cols;c++){
-        const on = wave[c] === r;
-        html += `<i class="${on ? "on" : ""}"></i>`;
-      }
+// Gráfico animado do painel (o mesmo demo interativo do manual: manual.html#grafico)
+(function(){
+  const LARGURA=32;
+  const ALTURAS={subindo:[0.30,1.80],descendo:[1.80,0.30]};
+  const rig=document.getElementById('rig-web');
+  if (!rig) return;
+  const dots=[];
+  for(let i=0;i<LARGURA*8;i++){const d=document.createElement('div');d.className='dot';rig.appendChild(d);dots.push(d);}
+  function computeGrid(a1,a2,fAgora){
+    const alturaMin=Math.min(a1,a2),alturaMax=Math.max(a1,a2);
+    let faixa=alturaMax-alturaMin; if(faixa<0.01)faixa=0.01;
+    const colunaAgora=Math.round(fAgora*(LARGURA-1));
+    const grid=Array.from({length:8},()=>new Array(LARGURA).fill(0));
+    for(let coluna=0;coluna<LARGURA;coluna++){
+      const f=coluna/(LARGURA-1);
+      const alt=a1+(a2-a1)*(1-Math.cos(Math.PI*f))/2.0;
+      const fn=(alt-alturaMin)/faixa;
+      let linha=Math.round((1.0-fn)*7); linha=Math.max(0,Math.min(7,linha));
+      const ehAgora=coluna===colunaAgora;
+      for(let l=0;l<8;l++){const agua=l>=linha; grid[l][coluna]=ehAgora?(agua?0:1):(agua?1:0);}
     }
-    grid.innerHTML = html;
+    return grid;
   }
+  let fAgora=0.32, dir='subindo';
+  function render(){
+    const [a1,a2]=ALTURAS[dir];
+    const grid=computeGrid(a1,a2,fAgora);
+    for(let row=0;row<8;row++)for(let col=0;col<LARGURA;col++){
+      const d=dots[row*LARGURA+col];
+      d.classList.toggle('on',grid[row][col]===1); d.classList.toggle('agora',grid[row][col]===2);
+    }
+  }
+  document.getElementById('seg-web').addEventListener('click',(ev)=>{
+    const b=ev.target.closest('button'); if(!b)return;
+    document.querySelectorAll('#seg-web button').forEach(x=>x.classList.remove('ativo'));
+    b.classList.add('ativo'); dir=b.dataset.dir; render();
+  });
+  setInterval(()=>{ fAgora=(fAgora+0.02)%1; render(); },450);
+  render();
 })();
 </script>
 
