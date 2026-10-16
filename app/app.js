@@ -6,7 +6,7 @@
  */
 'use strict';
 
-const VERSAO = '1.1.1';
+const VERSAO = '1.1.2';
 const URL_BACKEND = 'https://script.google.com/macros/s/AKfycbz6F9bqwkayP-zxt7BGdj2BwJyJLfYt64oW8SfE9K0sDi9mUcjjcRasBNyXbwAyI1QQ/exec';
 const URL_REGISTRO = 'https://script.google.com/macros/s/AKfycbz2CTGsbaUf6Yd5QL8IEA42O4XGqkFdCr7iDRgleGv5lkRd94wQkK9X0j_KkSjv9o4/exec';
 const URL_APK = 'https://drive.google.com/drive/folders/1RwnIj0q2sd1aMOpmRbRcfFxL4z3fKflv';
@@ -796,6 +796,10 @@ function iniciar() {
 
   // dica de instalação no iPhone (Safari, ainda não instalado)
   const ios = /iPhone|iPad|iPod/.test(navigator.userAgent);
+  if (/Android/.test(navigator.userAgent)) {
+    $('link-apk-nota').href = URL_APK;
+    $('nota-android').classList.add('ver');
+  }
   const instalado = navigator.standalone || matchMedia('(display-mode: standalone)').matches;
   if (ios && !instalado && !guardar.ler('avisoFechado', false)) $('aviso-instalar').classList.add('ver');
   $('fechar-aviso').addEventListener('click', (e) => { e.stopPropagation(); $('aviso-instalar').classList.remove('ver'); guardar.gravar('avisoFechado', true); });
